@@ -89,6 +89,7 @@ export function createMockClient(options: MockClientOptions = {}): SorabanClient
       position: q.position,
       prompt: q.prompt,
       unit: q.unit,
+      category: q.category,
       state: isVoid(q) ? "void" : submitted.has(q.id) ? "answered" : "unanswered",
     };
   }

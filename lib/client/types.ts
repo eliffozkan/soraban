@@ -15,6 +15,20 @@ export const QUESTIONS_PER_DAY = 6;
 
 export type QuestionState = "unanswered" | "answered" | "void";
 
+/**
+ * Sezonun altı kategorisi — PROPOSAL.
+ * Neris'in soru kartı ve özet ekranı kategori gösteriyor ama sözleşmede bu alan
+ * henüz yok. Elif `QuestionPublic`'e eklemeyi onaylayana kadar alan isteğe
+ * bağlıdır: ekranlar varsa gösterir, yoksa gizler. Cevap hakkında bilgi vermez.
+ */
+export type QuestionCategory =
+  | "kampus"
+  | "akademik"
+  | "yurt-yemek"
+  | "tarih-kultur"
+  | "eymir-doga"
+  | "bilim-topluluklar";
+
 /** Tahminden önce görülebilen tek soru verisi. Cevap/açıklama/kaynak YOK. */
 export type QuestionPublic = {
   id: string;
@@ -22,6 +36,8 @@ export type QuestionPublic = {
   prompt: string;
   unit: string;
   state: QuestionState;
+  /** PROPOSAL (yukarıya bak): sözleşmeye eklenene kadar isteğe bağlı. */
+  category?: QuestionCategory;
 };
 
 /** Sunucu tahmini kilitledikten SONRA dönen sonuç. */

@@ -29,7 +29,7 @@ describe("mock SorabanClient", () => {
     await client.ensureGuestSession();
     const { questions } = await client.getToday();
     for (const q of questions) {
-      expect(Object.keys(q).sort()).toEqual(["id", "position", "prompt", "state", "unit"]);
+      expect(Object.keys(q).sort()).toEqual(["category", "id", "position", "prompt", "state", "unit"]);
       expect(q.prompt).toContain("ÖRNEK");
     }
   });

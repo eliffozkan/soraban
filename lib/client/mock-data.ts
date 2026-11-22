@@ -5,13 +5,15 @@
  * ve kaynak bağlantıları gerçek bir bilgiye dayanmaz. Gerçek sorular bu depoya
  * veya istemci koduna asla eklenmez.
  */
-import type { GameDay } from "./types";
+import type { GameDay, QuestionCategory } from "./types";
 
 export type MockQuestionFixture = {
   id: string;
   position: number;
   prompt: string;
   unit: string;
+  /** ÖRNEK kategori (PROPOSAL alanı, bkz. types.ts). */
+  category: QuestionCategory;
   /** ÖRNEK doğru değer (uydurma). */
   correctAnswer: number;
   reasoning: string;
@@ -38,6 +40,7 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     position: 1,
     prompt: "ÖRNEK SORU 1: Hayali bir kampüste kaç bank vardır?",
     unit: "adet",
+    category: "kampus",
     correctAnswer: 2500,
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/1",
@@ -48,6 +51,7 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     position: 2,
     prompt: "ÖRNEK SORU 2: Hayali bir yurtta bir günde kaç bardak çay içilir?",
     unit: "bardak",
+    category: "yurt-yemek",
     correctAnswer: 12000,
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/2",
@@ -58,6 +62,7 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     position: 3,
     prompt: "ÖRNEK SORU 3: Hayali bir koşu yolu kaç metre uzunluğundadır?",
     unit: "metre",
+    category: "kampus",
     correctAnswer: 3200,
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/3",
@@ -68,6 +73,7 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     position: 4,
     prompt: "ÖRNEK SORU 4: Hayali bir kütüphanede kaç kitap vardır?",
     unit: "kitap",
+    category: "akademik",
     correctAnswer: 450000,
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/4",
@@ -78,6 +84,7 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     position: 5,
     prompt: "ÖRNEK SORU 5: Hayali bir göl kaç metrekaredir?",
     unit: "m²",
+    category: "eymir-doga",
     correctAnswer: 180000,
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/5",
@@ -88,6 +95,7 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     position: 6,
     prompt: "ÖRNEK SORU 6: Hayali bir ormanda kaç ağaç vardır?",
     unit: "ağaç",
+    category: "eymir-doga",
     correctAnswer: 1000000,
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/6",
