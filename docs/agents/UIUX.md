@@ -6,3 +6,6 @@ Read `AGENTS.md`, `CLAUDE.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SOR
 **First deliverable:** original SORABAN mobile-first look, documented design tokens and reusable accessible components: `Button`, `Card`, `NumericInput` (presentation only), `Progress`, `ScoreDisplay`, visual states (loading, disabled, invalid, focus, success, empty) and a local component preview/test harness. Define props/exports with Zeynep before implementing them. Use original styling and assets; do not copy Fermi branding/screens. No browser Supabase client, API fetch, scoring, route logic, SQL or private answer data.
 
 **Acceptance:** keyboard/focus support, usable contrast/touch targets, desktop/mobile responsive appearance, typed props, no business logic, no dependence on secrets, reusable components callable from Zeynep's game routes. Run lint/typecheck/build. Coordinate any required edits to shared files.
+
+## Agreed cross-team responsibilities
+Supply prop-driven visual states for anonymous-session initialization, loading, auth errors and retry controls. No auth, token, Supabase or API code in UI primitives. Neris owns isolated primitive/component tests after Elif's shared test tooling PR is merged. Read `docs/INTEGRATION_DECISIONS.md`. No Figma.

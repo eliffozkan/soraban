@@ -115,6 +115,10 @@ execution approval. For local production checks run `npm run start`, then reques
 the four page routes and `/api/health`. Build generates Next.js route types for
 `typecheck`; on a clean tree, run the build before standalone type checking if needed.
 
+## Shared agent integration decisions
+
+Anonymous Supabase session creation belongs to Elif's server endpoint, invoked by Zeynep's browser adapter. Neris supplies only visual states. Elif owns shared React test infrastructure and CI changes; Zeynep and Neris write their scoped UI tests. See [integration decisions](docs/INTEGRATION_DECISIONS.md). Season start is intentionally unset.
+
 ## Manual decisions and next phase
 
 - Review/approve the draft SQL and execute only in an explicitly approved environment;
@@ -125,6 +129,6 @@ the four page routes and `/api/health`. Build generates Next.js route types for
   Auth and implement session refresh, then identity linking/conflict handling later.
 - Next deliverable is a six-question vertical slice with explicitly dummy fixtures,
   atomic persistence and safe reveal. No real question content is supplied here.
-- Figma supplies the frontend design. Before public launch: verified content,
+- Neris implements the design system in React/Tailwind; no Figma handoff. Before public launch: verified content,
   nickname moderation, privacy notice, rate limits, abuse/mobile/load testing and
   review of hosting capacity. Live deployment and spending require approval.

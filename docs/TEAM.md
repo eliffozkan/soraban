@@ -12,7 +12,9 @@ All three contributors use AI coding agents on **separate local checkouts** of t
 
 **Interface:** Neris exposes prop-driven, accessible UI primitives without game state, scoring, database access or API fetches. Zeynep composes those primitives into game screens and owns client interactions. Elif provides authenticated API endpoints; Zeynep consumes documented DTOs only. No one independently builds a second version of another owner's layer.
 
-**Shared/reviewed files:** `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SORABAN_CODEX_CONTEXT.md` and the GitHub workflows. The proposed API contract is jointly accepted by Elif + Zeynep before changing its shapes; Neris reviews fields that affect display. Only one agent edits a shared file at a time.
+**Anonymous session boundary:** Elif implements `POST /api/session/anonymous` and SSR/session security; Zeynep calls it through `lib/client` at first game entry; Neris provides loading/error UI primitives only. See `docs/INTEGRATION_DECISIONS.md` for precise behavior, test and CI owners and pending product launch gates.
+
+**Shared/reviewed files:** `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SORABAN_CODEX_CONTEXT.md` and the GitHub workflows. Elif owns changes to shared Vitest configuration, dependencies and CI after Zeynep review; Zeynep and Neris own their individual React tests. The proposed API contract is jointly accepted by Elif + Zeynep before changing its shapes; Neris reviews fields that affect display. Only one agent edits a shared file at a time.
 
 ## Build order and concrete deliverables
 1. **Shared boundary:** Agree on `docs/API_CONTRACT.md`. No secret answers in public DTOs. Establish initial UI props (`Button`, `Card`, `NumericInput`, `Progress`, `ScoreDisplay`) between Neris and Zeynep. Components must remain independent of fetching.

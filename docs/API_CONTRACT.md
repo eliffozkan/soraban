@@ -23,8 +23,11 @@ type DailyProgress = { answeredCount: number; totalCount: 6; completed: boolean;
 type ApiError = { error: { code: string; message: string } };
 ```
 
+## POST /api/session/anonymous — planned
+Elif owns this endpoint. If an authenticated Supabase session exists, preserve it and return its anonymity status; otherwise establish a new anonymous Supabase Auth session with secure SSR cookies. Zeynep calls it through a single client adapter before `GET /api/today`; Neris supplies only UI states. The endpoint is idempotent with respect to an existing valid session; do not replace a linked identity. No tokens or raw identifiers are returned. No-store response example: `{ "status": "ready", "isAnonymous": true }`. Fail safely on auth-service errors or rate limits. See `docs/INTEGRATION_DECISIONS.md` for ownership and tests.
+
 ## GET /api/today — planned
-Requires an authenticated Supabase session (anonymous Auth users count). The handler may establish the anonymous session in a separately agreed auth flow. Returns public data and **only this player's** progress.
+Requires an authenticated Supabase session (anonymous Auth users count). The handler NEVER creates an account; call `POST /api/session/anonymous` first. Returns public data and **only this player's** progress.
 ```json
 {
   "day": { "id": "day-uuid", "number": 1, "date": "YYYY-MM-DD" },
