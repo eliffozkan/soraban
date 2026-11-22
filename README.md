@@ -1,94 +1,135 @@
-# SORABAN design system
+# SORABAN
 
-Owner: Neris | Status: v0.3, 22 November 2026 | Source: team-selected v4 mockups
-(web/mobile "Giriş" and "Tahmin" screens)
+Daily numerical estimation about METU/ODTÜ for anyone interested in the university.
+The starter has been published and three developers now work on separate feature
+branches. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup/PR workflow,
+[team ownership](docs/TEAM.md), and the [proposed API contract](docs/API_CONTRACT.md).
+Neris implements React/Tailwind UI directly (no Figma handoff).
 
-Bold, friendly and printed-looking: cream ground, navy ink, thick 2 px outlines,
-hard offset shadows, flat yellow / blue / pink / green fields, tilted stickers and
-heavy expanded type. Original work: no fermi.tr colours, layout, copy or assets.
-The mockups still say "GAUSS"; the code uses the current name, SORABAN.
+Read [the working specification](docs/SORABAN_CODEX_CONTEXT.md) first; version 0.2
+overrides the earlier GDD. Active project references and the unapplied private schema
+use SORABAN/soraban consistently. See [checkout naming](docs/TEAM.md#naming-and-checkout-paths)
+for historical references and moving an existing local checkout after Codex exits.
 
-## Principles
+## Local development
 
-- **Mobile first.** Everything works at 360 px. Touch targets are at least 44 px.
-- **One blue action per screen.** Blue is the primary button (OYNA, KİLİTLE).
-- **Outline + shadow = interactive or important.** Inputs, buttons and the main
-  card get the hard shadow; plain tiles get only the outline.
-- **Colour never carries meaning alone.** Errors are pink **and** worded; score
-  colours always sit next to the number.
-- **Numbers are the hero.** Display type, tabular figures, Turkish formatting
-  (`8.500`, `73,5`), the unit always beside the value.
-- **Presentation only.** Components take data through props;
-  see [components.md](components.md).
+Use Node.js **24 LTS** and its bundled npm. `.nvmrc` pins **24.22.3**;
+`package.json` restricts the supported runtime to `24.x`. Supabase uses current
+stable releases compatible with this runtime. The existing Next.js 16.4.6 / React
+19.3 / Tailwind 4 starter is preserved.
 
-## Tokens
+```sh
+nvm use
+node --version
+npm ci
+npm run dev
+```
 
-Defined in `app/globals.css` under `@theme`, so Tailwind generates `bg-cream`,
-`text-ink`, `border-ink`, `rounded-lg`, `shadow-hard`, and so on.
+If nvm is not loaded, source `~/.nvm/nvm.sh` first. If the pinned runtime is
+missing, installing it with `nvm install --skip-default-packages` writes to
+`~/.nvm` and requires machine-change approval in Codex. Keep the existing nvm
+default; do not run `nvm alias default` or change shell startup files for SORABAN.
+`nvm use` selects Node in the current shell, not automatically when changing
+directories. Use a dedicated SORABAN terminal; close it or select the other project’s
+Node version when switching projects.
 
-| Token | Value | Use | Contrast |
-| --- | --- | --- | --- |
-| `cream` | `#fff6e5` | Page background | ink 15.9:1 |
-| `paper` | `#fffdf6` | Tiles, secondary buttons, keypad | ink 16.8:1 |
-| `surface` | `#ffffff` | Desktop input field | ink 17.1:1 |
-| `ink` | `#161a33` | Text, outlines, shadows | |
-| `ink-muted` | `#4b4f6a` | Secondary text | 7.5:1 on cream |
-| `yellow` | `#ffc800` | Main card, phone input | ink 11.0:1 |
-| `blue` | `#2e4bff` | Primary action, current step | **white text only**, 5.9:1 |
-| `blue-strong` | `#1f37d6` | Primary hover | white 7.6:1 |
-| `pink` | `#ff3d7f` | Category tag, errors, stickers | ink 5.1:1 |
-| `green` | `#00c27a` | Shortcut chips, success | ink 7.3:1 |
-| `focus` | `#2e4bff` | 3 px focus ring, 3 px offset | 5.5:1 on cream |
+Visit http://localhost:3000. No environment variables are needed for the placeholder
+pages or production build. For Supabase integration, create a private `.env.local` from `.env.example`
+without overwriting an existing file, then supply the authorized project URL and
+**publishable** key through your local editor or hidden terminal input. Empty fields
+are intentional. `.env.local` is ignored; never commit credentials. Next.js bundles
+`NEXT_PUBLIC_*` values at build time, so rebuild after changing them.
 
-Ink on blue is 2.9:1, so blue surfaces always use white text.
+## Structure
 
-| Shape | Value |
-| --- | --- |
-| Outline | `border-2 border-ink` everywhere |
-| `shadow-hard` / `-sm` / `-xs` | 6 / 4 / 2 px offset, no blur, ink |
-| `rounded-sm` / `-md` / `-lg` | 10 / 16 / 24 px; pills use `rounded-full` |
-| Pressed button | moves by its shadow offset and the shadow disappears |
+```text
+app/                     App Router pages and thin API Route Handlers
+  api/health/route.ts     Public liveness endpoint
+components/              Shared UI primitives (Neris) and game UI (Zeynep)
+lib/game/                Pure game logic, independent of React and Supabase
+lib/supabase/            Browser and request-scoped server client factories
+lib/data/                Reserved server-only repository boundary
+tests/                  Unit tests (game logic)
+supabase/drafts/         Review-only SQL; outside automatic migration discovery
+docs/                    Specification and schema security review
+```
 
-## Type
+Available routes: `/`, `/play`, `/results`, `/leaderboard` are Turkish placeholders.
+`GET /api/health` returns `{"status":"ok","service":"soraban"}` without configuration,
+authentication or database access. It reports application liveness, not database
+readiness. Gameplay, guess APIs, accounts, ranking and sharing are deferred.
+The design system (tokens, self-hosted Archivo font, UI primitives in
+`components/ui`) is documented in [docs/design/README.md](docs/design/README.md)
+and [docs/design/components.md](docs/design/components.md).
 
-**Archivo** (variable weight and width, SIL OFL 1.1) is self-hosted from
-`public/brand/fonts/` so builds still need no font download. Two subsets
-(latin + latin-ext) cover Turkish (ç ğ ı İ ö ş ü).
+## Scoring
 
-- `display` utility: weight 850, width 112 %, tight leading. Titles, numbers,
-  big buttons, stickers.
-- `eyebrow` utility: 13 px, weight 800, 0.12 em tracking, capitals
-  ("TAHMİNİN", "GÜNÜN BULMACASI"). Relies on `<html lang="tr">` so `i → İ`.
-- Body: Archivo regular/medium 16 px.
+`scoreGuess(answer, guess, maximum?)` in `lib/game/scoring.ts` implements
+`max(0, 100 - 50 * log10(max(guess/answer, answer/guess)))` without rounding.
+Both inputs must be positive finite numbers at or below the maximum (initial
+proposal `1e15`); invalid values throw `RangeError`. No implicit string coercion.
+The function accepts parsed numbers; accessible separator parsing/confirmation and
+server request validation will be implemented with gameplay. Changing the maximum
+also requires updating the SQL checks. Unit test numbers are synthetic mathematical
+inputs, not questions or seed content.
 
-Font choice was read from the mockups. If the mockup file names another font,
-swap the two woff2 files and the `@font-face` rules; nothing else changes.
+## Supabase and security
 
-## Categories
+The browser factory uses only public configuration. The server factory imports
+`server-only`, creates a client per request, and retains the user's RLS scope.
+It is intended for writable-cookie Route Handlers / Server Actions; cookie-write
+errors are not swallowed. No privileged client or live database calls are present.
+Before connecting auth to rendered pages, implement session refresh/proxy, verified
+server identity checks, cookie/cache handling and auth integration tests. Do not
+cache personalized responses. Anonymous Auth and Google linking are not implemented.
+Check current identity-linking and account-conflict documentation before adding them.
 
-Six display entries in `CATEGORIES` (`components/ui/categories.ts`): label,
-short phone label, icon and default tile colour, as in the home mockup. The API
-DTO does not yet carry a category; see the open question in components.md.
+[Draft SQL](supabase/drafts/0001_initial_schema.sql) and [review notes](docs/SCHEMA_REVIEW.md)
+separate private answers from public prompts, enable RLS and deny client writes.
+The unique player/question constraint supports future atomic locking; it is not a
+complete submission protocol. No answers are readable through client roles, even
+after guessing; a reviewed server transaction must implement safe reveal later.
+No public leaderboard projection exists yet. Keep `soraban_private` outside exposed
+schemas. Do not execute or move the draft into active migrations without explicit
+human approval. No migrations, auth settings or external accounts were changed.
 
-## Accessibility checklist
+## Checks
 
-- Visible 3 px blue focus ring on every control.
-- Inputs have visible labels; hint, confirmation and error linked with
-  `aria-describedby`; errors set `aria-invalid`.
-- Confirmation is `aria-live="polite"`; danger notices and `StatusState` errors use
-  `role="alert"`; the share result is announced politely.
-- `RevealCard` renders the source link only for absolute http(s) URLs and opens it
-  with `rel="noopener noreferrer"`.
-- `LeaderboardTable` is a real `<table>` with a caption and column headers.
-- Progress is a `nav` + ordered list with `aria-current="step"` and spoken state
-  for each question.
-- Icon-only buttons require a `label`. Keypad keys for "," and backspace have
-  spoken names.
-- Motion (button press, chip press, spinner, skeleton, score pop) is disabled
-  under `prefers-reduced-motion`.
+```sh
+npm test
+npm run lint
+npm run typecheck
+npm run build
+npm audit
+```
 
-## Not yet decided
+Verified with Node **24.22.3** / npm **11.19.1**: clean `npm ci`, 22 scoring tests,
+lint, typecheck, production build and audit all pass; audit reports zero
+vulnerabilities. `npm ci` leaves the lockfile hash unchanged. The existing ESLint
+9.39.5 emits a deprecation notice during installation; a lint-toolchain upgrade
+is separate work.
 
-- Dark theme.
-- Share image design.
-- Final icon set review (current icons are simple original line drawings).
+`npm run test:watch` starts interactive unit testing. Tests cover scoring examples,
+invalid input, symmetry, configurable bounds and raw precision. SQL review is static;
+RLS, concurrency, auth and reveal require isolated database integration tests after
+execution approval. For local production checks run `npm run start`, then request
+the four page routes and `/api/health`. Build generates Next.js route types for
+`typecheck`; on a clean tree, run the build before standalone type checking if needed.
+
+## Shared agent integration decisions
+
+Anonymous Supabase session creation belongs to Elif's server endpoint, invoked by Zeynep's browser adapter. Neris supplies only visual states. Elif owns shared React test infrastructure and CI changes; Zeynep and Neris write their scoped UI tests. See [integration decisions](docs/INTEGRATION_DECISIONS.md). Season start is intentionally unset.
+
+## Manual decisions and next phase
+
+- Review/approve the draft SQL and execute only in an explicitly approved environment;
+  test role isolation before gameplay. See the security test checklist in the review.
+- Approve the season start and numeric maximum; decide deterministic daily/season
+  tie breaking and behavior when every question in a day is voided.
+- Each developer supplies authorized local Supabase configuration when needed. Enable anonymous
+  Auth and implement session refresh, then identity linking/conflict handling later.
+- Next deliverable is a six-question vertical slice with explicitly dummy fixtures,
+  atomic persistence and safe reveal. No real question content is supplied here.
+- Neris implements the design system in React/Tailwind; no Figma handoff. Before public launch: verified content,
+  nickname moderation, privacy notice, rate limits, abuse/mobile/load testing and
+  review of hosting capacity. Live deployment and spending require approval.
