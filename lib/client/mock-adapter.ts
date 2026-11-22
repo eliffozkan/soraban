@@ -10,11 +10,11 @@ import type { SorabanClient } from "./adapter";
 import { SorabanClientError } from "./errors";
 import { episodeBySlug, isEpisodeSlug } from "./episodes";
 import { checkNickname } from "./nickname";
+import { scoreGuess } from "../game/scoring";
 import {
-  MOCK_DAILY_SCORE_RAW,
   MOCK_DAY,
+  MOCK_EPISODE_QUESTIONS,
   MOCK_QUESTIONS,
-  mockEpisodeQuestions,
   type MockQuestionFixture,
 } from "./mock-data";
 import {
@@ -59,10 +59,7 @@ export function createMockClient(options: MockClientOptions = {}): SorabanClient
   let sessionReady = false;
   let nickname: string | null = null;
   const submitted = new Map<string, RevealedGuess>();
-  const episodeQuestions: Record<EpisodeSlug, MockQuestionFixture[]> = {
-    demo: mockEpisodeQuestions("demo"),
-    "2026-11-22": mockEpisodeQuestions("2026-11-22"),
-  };
+  const episodeQuestions: Record<EpisodeSlug, readonly MockQuestionFixture[]> = MOCK_EPISODE_QUESTIONS;
 
   const isVoid = (q: MockQuestionFixture) =>
     scenario === "with-void" && (q.id === VOID_QUESTION_ID || q.id.endsWith(VOID_SUFFIX));
@@ -83,7 +80,7 @@ export function createMockClient(options: MockClientOptions = {}): SorabanClient
     }
   }
 
-  function requireEpisode(slug: EpisodeSlug): MockQuestionFixture[] {
+  function requireEpisode(slug: EpisodeSlug): readonly MockQuestionFixture[] {
     if (!isEpisodeSlug(slug)) {
       throw new SorabanClientError("EPISODE_NOT_FOUND", "Bölüm bulunamadı.", 404);
     }
@@ -102,8 +99,10 @@ export function createMockClient(options: MockClientOptions = {}): SorabanClient
       answeredCount,
       totalCount: QUESTIONS_PER_DAY,
       completed,
-      // ÖRNEK hazır değer; mock ortalama HESAPLAMAZ.
-      scoreRaw: completed ? MOCK_DAILY_SCORE_RAW : null,
+      // Sunucudaki gibi: iptal edilmemiş soruların ham puan ortalaması.
+      scoreRaw: completed
+        ? valid.reduce((sum, q) => sum + (submitted.get(q.id)?.scoreRaw ?? 0), 0) / valid.length
+        : null,
     };
   }
 
@@ -161,7 +160,7 @@ export function createMockClient(options: MockClientOptions = {}): SorabanClient
       }
       // İlerleme, sorunun ait olduğu bölüme göre hesaplanır.
       const owner =
-        (Object.values(episodeQuestions) as MockQuestionFixture[][]).find((qs) => qs.includes(question)) ??
+        (Object.values(episodeQuestions) as (readonly MockQuestionFixture[])[]).find((qs) => qs.includes(question)) ??
         MOCK_QUESTIONS;
       // Aynı soruya tekrar gönderim: ilk kaydedilen sonuç döner (yeni deneme yok).
       const existing = submitted.get(questionId);
@@ -170,7 +169,8 @@ export function createMockClient(options: MockClientOptions = {}): SorabanClient
       const revealed: RevealedGuess = {
         questionId,
         guess,
-        scoreRaw: question.cannedScoreRaw,
+        // Gerçek puan formülü (lib/game/scoring.ts), ikinci bir formül yok.
+        scoreRaw: scoreGuess(question.correctAnswer, guess),
         correctAnswer: question.correctAnswer,
         reasoning: question.reasoning,
         sourceUrl: question.sourceUrl,
