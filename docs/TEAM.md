@@ -1,63 +1,43 @@
-# SORABAN team ownership
+# SORABAN — three-agent team contract
+Status: working agreement | 22 November 2026
 
-Three developers choose one primary role each before starting parallel work. Names
-and GitHub handles are not yet supplied; the roles below are assignments to make,
-not invented identities. Record the agreed handles in a follow-up PR. Ownership
-coordinates work and review; everyone can contribute across boundaries.
+## Who owns what
+All three contributors use AI coding agents on **separate local checkouts** of this repository. AI output is reviewed by the human who owns the change. There is **no Figma handoff**; Neris implements UI components directly in React/Tailwind.
 
-| Primary role | Owns | Required coordination |
+| Human / agent | Primary ownership | Directly edits |
 | --- | --- | --- |
-| Developer A — frontend | `components/`, `app/` pages/layouts/styles except `app/api/`, `public/`; Figma translation, accessibility, responsive states | Agree API DTOs with B; obtain B review for auth/session or result rendering |
-| Developer B — backend/API | `app/api/`, `lib/game/`, `lib/data/`, `lib/supabase/`, game/API tests | C reviews authorization, scoring/persistence and transaction changes; A reviews consumer-facing API changes |
-| Developer C — database/content | `supabase/`, `docs/SCHEMA_REVIEW.md`, verified-question research and source review | B reviews every SQL/RLS/scoring-data change; A reviews public question wording and units |
+| **Elif — Codex** | Backend, Supabase Auth/SQL, API, data access, scoring and security | `app/api/**`, `lib/game/**`, `lib/data/**`, `lib/supabase/**`, `supabase/**`, `tests/game/**`, `tests/api/**`, `docs/SCHEMA_REVIEW.md` |
+| **Zeynep — Claude** | Frontend flow, routes, state, forms, API integration and accessibility | `app/page.tsx`, `app/play/**`, `app/results/**`, `app/leaderboard/**`, `app/layout.tsx`, `components/game/**`, `lib/client/**`, `tests/ui/**` |
+| **Neris — Claude** | Visual design as code, design tokens, responsive primitives and reusable visual components | `components/ui/**`, `app/globals.css`, `docs/design/**`, `public/brand/**` |
 
-B coordinates shared package/lockfile, Next.js/TypeScript configuration and integration
-changes. Another developer reviews them. Product-rule or architecture changes in
-`docs/GAUSS_CODEX_CONTEXT.md` need the affected owners' review and project-owner approval
-for unresolved decisions; a renamed product does not change the accepted rules.
+**Interface:** Neris exposes prop-driven, accessible UI primitives without game state, scoring, database access or API fetches. Zeynep composes those primitives into game screens and owns client interactions. Elif provides authenticated API endpoints; Zeynep consumes documented DTOs only. No one independently builds a second version of another owner's layer.
 
-## Boundaries
+**Shared/reviewed files:** `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/GAUSS_CODEX_CONTEXT.md` and the GitHub workflows. The proposed API contract is jointly accepted by Elif + Zeynep before changing its shapes; Neris reviews fields that affect display. Only one agent edits a shared file at a time.
 
-- UI consumes explicit public DTOs. It cannot import repositories, private answers
-  or privileged clients. Keep design changes out of game rules and database code.
-- Route Handlers authenticate and validate requests. Pure rules stay in `lib/game`;
-  server-only repositories stay in `lib/data`. No direct client score writes.
-- SQL changes stay as review-only drafts until the project owner explicitly approves
-  execution for a named environment. PR approval is not permission to apply a migration.
-- Content ownership covers real source verification, units, positive correct values,
-  dates and backups. No invented real questions, seeded answers or unreviewed imports.
-  Keep answer/source research outside public frontend assets. A fixture, when requested
-  later, must be explicitly dummy data and isolated from real content.
-- Describe the affected boundary in an issue/PR before editing shared files. Keep
-  features small; avoid concurrent edits to layout, schema and package-lock.json.
-  Preserve unpublished work in others' branches; resolve conflicts with the owner.
+## Build order and concrete deliverables
+1. **Shared boundary:** Agree on `docs/API_CONTRACT.md`. No secret answers in public DTOs. Establish initial UI props (`Button`, `Card`, `NumericInput`, `Progress`, `ScoreDisplay`) between Neris and Zeynep. Components must remain independent of fetching.
+2. **Parallel work — separate branches:**
+   - Elif: database migration review and isolated SQL permission tests; authenticated transactional submission proposal/implementation and API tests. **No live migration or production write without explicit approval.**
+   - Zeynep: mobile-first homepage, question flow, confirmation, reveal, result and leaderboard page states, initially against typed mock data behind a replaceable adapter. No hard-coded real answers.
+   - Neris: original light/neutral visual language, tokens, typography, spacing, responsive rules, accessible buttons/inputs/cards/status states; components with documented props and a local preview.
+3. **Integrate:** Neris component PR merges first (or components are brought into Zeynep's branch). Zeynep replaces mocks with Elif's endpoints only after the API contract and authorization behavior are verified.
+4. **Review:** All checks green, responsive/mobile/error/keyboard flows inspected, one-guess invariant and answer privacy tested in a disposable environment. Publishing to Supabase/Vercel is a separate explicit approval.
 
-## Review and integration
+## Collaboration protocol
+- Each person **clones** `https://github.com/eliffozkan/soraban.git` on their own computer. Do not share a checkout or worktree among agents.
+- Start from `main` and create a branch: `feat/backend-foundation`, `feat/frontend-flow`, `feat/ui-system`. One active feature branch per person; later branches named per task.
+- Before changing files, agent reads `AGENTS.md`, `CLAUDE.md` (Claude), `docs/GAUSS_CODEX_CONTEXT.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md` and the relevant `docs/agents/*.md`.
+- Never commit directly to `main`. Push only your feature branch, open a PR, request at least one human teammate review, then squash merge. Pull `main` after each merge. No force pushes.
+- Run `npm test`, `npm run lint`, `npm run build`, `npm run typecheck` and `git diff --check` before PR. Flag unavailable integration tests explicitly.
+- Do not edit another person's owned paths without their agreement. Cross-boundary requests are documented in the PR/issues. Package and toolchain changes require coordination.
+- All AI agents must **report files touched, test results, assumptions and dependencies**; never silently broaden the task or deploy.
 
-Every PR needs at least one other developer's review and all local checks. Changes
-spanning boundaries need each affected role involved. Database/security changes need
-B and C involved; if one authors the change, the other reviews. Re-run checks after
-conflict resolution. Merge by squash into `main`; never force-push `main`. PR approvals
-for publishing, migrations or spending are distinct from implementation review.
+## Security and shared development
+- Production-candidate questions and correct answers are **not** checked into public source, fixtures or client bundles. Only explicitly marked synthetic mock data may be committed.
+- `.env.local` stays local and ignored; Elif owns the Supabase project. Zeynep and Neris do not need credentials for mock/UI work.
+- Existing SQL draft is not applied; `gauss_private` and legacy paths remain for compatibility until a separately reviewed migration.
+- No credentials in prompts, PRs, logs or screenshots. Never bypass RLS by exposing privileged keys; public question endpoints never reveal unpublished correct values.
+- The project is **SORABAN**. Earlier GAUSS references in existing file paths/history are intentional, not new product naming.
 
-No CODEOWNERS file with fabricated handles is installed. GitHub collaborators, reviewer
-rules, branch protections and automated CI are not configured by this local task.
-After approved publication, assign handles, invite the two collaborators, and configure
-`main` to require PR review and the agreed checks where available. Until then the
-review/check rules are a manual team convention, not enforced by GitHub.
-
-## Retained internal names
-
-SORABAN is the product/UI name; npm package and health service identity are `soraban`.
-The following retain GAUSS-era names intentionally:
-
-- `gauss_private` and all SQL tables, constraints and policies: preserve the authorization
-  boundary and migration review. A database rename needs a separately reviewed migration.
-- `supabase/drafts/0001_initial_schema.sql`: same file, still draft-only and unapplied.
-- `docs/GAUSS_CODEX_CONTEXT.md`: stable specification path used by existing instructions;
-  its heading/product copy now say SORABAN, with original GDD attribution preserved.
-- The existing checkout `/home/elif/gauss`, historical create-next-app command, Git
-  commit messages and temporary `/tmp/gauss-*` review-tool references: historical paths
-  and records, not current branding. Do not move the checkout or rewrite Git history.
-- The existing Supabase project URL/identity is infrastructure, independent of branding;
-  no project rename, recreation, credential change or schema execution was performed.
+## Current stage
+The starter and scoring tests are present, but gameplay routes are placeholders and real submission/auth/leaderboard APIs are not yet implemented. Contract examples describe **proposals**, not existing working endpoints. Team PRs should be scoped and independently reviewable.
