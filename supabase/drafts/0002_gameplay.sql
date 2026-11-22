@@ -87,11 +87,11 @@ declare v_day public.game_days;
 begin
   lock table public.game_days in share row exclusive mode;
   select * into v_day from public.game_days where id = p_day for update;
-  if not found or p_season_start is null or not isfinite(p_season_start) then
+  if not found or v_day.episode_key is not null or p_season_start is null or not isfinite(p_season_start) then
     raise exception 'Invalid publication request';
   end if;
-  if (select count(*) from public.game_days) <> 30
-    or exists (select 1 from public.game_days where play_date <> p_season_start + (day_number - 1)) then
+  if (select count(*) from public.game_days where episode_key is null) <> 30
+    or exists (select 1 from public.game_days where episode_key is null and play_date <> p_season_start + (day_number - 1)) then
     raise exception 'The approved consecutive 30-day schedule is required';
   end if;
   perform soraban_private.assert_day_content(p_day);
@@ -119,7 +119,8 @@ declare
   v_result jsonb;
 begin
   select * into v_day from public.game_days
-  where published and play_date = (clock_timestamp() at time zone 'Europe/Istanbul')::date for share;
+  where published and episode_key is null
+    and play_date = (clock_timestamp() at time zone 'Europe/Istanbul')::date for share;
   if not found then raise sqlstate 'PT503' using message = 'DAY_UNAVAILABLE'; end if;
   -- Ensure the lock exists even on a player's first read racing their first guess.
   insert into public.player_profiles (player_id) values (v_player) on conflict (player_id) do nothing;
@@ -175,7 +176,8 @@ begin
   select game_day_id into v_day_id from public.public_questions where id = p_question_id;
   if not found then raise sqlstate 'PT404' using message = 'QUESTION_NOT_FOUND'; end if;
   select * into v_day from public.game_days where id = v_day_id for share;
-  if not v_day.published or v_day.play_date > (clock_timestamp() at time zone 'Europe/Istanbul')::date then
+  if not v_day.published or (v_day.episode_key is null
+    and v_day.play_date > (clock_timestamp() at time zone 'Europe/Istanbul')::date) then
     raise sqlstate 'PT404' using message = 'QUESTION_NOT_FOUND';
   end if;
   -- Same lock order for reads, guesses, and trusted voiding: day, then player.
@@ -187,7 +189,8 @@ begin
       'progress', soraban_private.progress(v_player, v_day.id));
   end if;
   select * into v_question from public.public_questions where id = p_question_id;
-  if v_day.play_date <> (v_admitted at time zone 'Europe/Istanbul')::date or v_question.voided_at is not null then
+  if (v_day.episode_key is null and v_day.play_date <> (v_admitted at time zone 'Europe/Istanbul')::date)
+    or v_question.voided_at is not null then
     raise sqlstate 'PT409' using message = 'DAY_CLOSED';
   end if;
   perform soraban_private.assert_day_content(v_day.id);

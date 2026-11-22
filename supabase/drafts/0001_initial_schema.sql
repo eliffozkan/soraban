@@ -15,10 +15,22 @@ revoke all on function soraban_private.questions_per_day() from public, anon, au
 
 create table public.game_days (
   id uuid primary key default gen_random_uuid(),
-  day_number smallint not null unique check (day_number between 1 and 30),
-  play_date date not null unique check (isfinite(play_date)),
-  published boolean not null default false
+  day_number smallint unique check (day_number between 1 and 30),
+  play_date date check (isfinite(play_date)),
+  episode_key text unique,
+  episode_title text,
+  published boolean not null default false,
+  check (
+    (episode_key is null and episode_title is null and day_number is not null and play_date is not null)
+    or (episode_key is not null and day_number is null and length(trim(episode_title)) between 1 and 80
+      and episode_title is not null and (
+        (episode_key = 'demo' and play_date is null)
+        or (episode_key = '2026-11-22' and play_date = date '2026-11-22' and play_date is not null)
+      ))
+  )
 );
+-- Presentation dates do not reserve a date or day number in the future season.
+create unique index season_play_date_key on public.game_days(play_date) where episode_key is null;
 
 create table public.public_questions (
   id uuid primary key default gen_random_uuid(),
@@ -44,7 +56,7 @@ create table soraban_private.private_answers (
 
 create table public.player_profiles (
   player_id uuid primary key references auth.users(id) on delete cascade,
-  nickname text check (nickname = trim(nickname) and char_length(nickname) between 2 and 32),
+  nickname text check (nickname = trim(nickname) and char_length(nickname) between 3 and 20),
   nickname_approved boolean not null default false,
   check (not nickname_approved or nickname is not null)
 );
@@ -87,7 +99,7 @@ revoke all on public.game_days, public.public_questions, public.player_profiles,
 revoke all on soraban_private.private_answers from public, anon, authenticated, service_role;
 -- Column allowlists also prevent future private columns becoming public by accident.
 -- Clients must select these columns explicitly: SELECT * on questions is denied.
-grant select (id, day_number, play_date, published)
+grant select (id, day_number, play_date, published, episode_key, episode_title)
   on public.game_days to anon, authenticated;
 grant select (id, game_day_id, position, prompt, unit, category, voided_at)
   on public.public_questions to anon, authenticated;
@@ -100,7 +112,8 @@ grant select (player_id, game_day_id, score, question_count, completed_at)
 
 -- Publishing today also makes previous published days readable as an archive.
 create policy released_days_read on public.game_days for select to anon, authenticated
-  using (published and play_date <= (statement_timestamp() at time zone 'Europe/Istanbul')::date);
+  using (published and (episode_key is not null
+    or play_date <= (statement_timestamp() at time zone 'Europe/Istanbul')::date));
 create policy released_questions_read on public.public_questions for select to anon, authenticated
   using (exists (select 1 from public.game_days d where d.id = public_questions.game_day_id));
 

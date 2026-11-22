@@ -1,5 +1,11 @@
 # Disposable gameplay verification — execution approval required
 
+**Episode sprint:** the current harness now also loads 0003 and runs
+`episode_checks.py`. It has not been executed for this revision; the earlier
+five-group pass below covers only the previous Milestone 2 SQL. A new explicit
+approval is needed. The runner rejects remote Docker endpoints. See
+`supabase/EPISODES.md` for content/import and the updated execution sequence.
+
 Do not run these commands until Elif separately approves disposable database and
 migration execution. PR approval is not execution approval. Nothing here reads
 `.env.local` or contacts live Supabase.
@@ -14,7 +20,8 @@ The runner downloads `postgres:17-alpine` if needed and creates a uniquely named
 temporary container with **no network, host ports, persistent volumes or password**.
 Database files live in a disposable tmpfs. It
 executes psql inside it: `bootstrap.sql`, both drafts in order, then `fixtures.sql`.
-It prints five essential result groups and stops its own container in `finally`.
+It prints the five original result groups plus three episode/profile/ranking groups
+and stops its own container in `finally`.
 The local trust setting is for this isolated container only, never a shared DB.
 
 Prepared checks: exact publication/answer coverage/consecutive dates; permissions,

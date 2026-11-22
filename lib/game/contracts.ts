@@ -31,3 +31,17 @@ export type GameDay = { id: string; number: number; date: string };
 export type TodayResponse = { day: GameDay; questions: QuestionPublic[]; progress: DailyProgress };
 export type GuessResponse = { guess: RevealedGuess; progress: DailyProgress };
 export type MyTodayResponse = { day: GameDay; guesses: RevealedGuess[]; progress: DailyProgress };
+export type EpisodeSlug = "demo" | "2026-11-22";
+export type Episode = { id: string; slug: EpisodeSlug; kind: "demo" | "dated"; title: string; date: string | null; totalCount: number };
+export type EpisodesResponse = { episodes: Episode[] };
+export type EpisodeResponse = { episode: Episode; questions: QuestionPublic[]; progress: DailyProgress };
+export type MyEpisodeResponse = { episode: Episode; guesses: RevealedGuess[]; progress: DailyProgress };
+export type Profile = {
+  nickname: string | null; displayName: string; nicknameApproved: boolean;
+  nicknameLocked: boolean; leaderboardHidden: boolean;
+};
+export type EpisodeRank = { rank: number; nickname: string; scoreRaw: number; isMe: boolean };
+export type EpisodeLeaderboard = {
+  episode: Episode; status: "ready"; entries: EpisodeRank[]; me: { rank: number; scoreRaw: number } | null;
+  playerCount: number; limit: number; offset: number;
+};

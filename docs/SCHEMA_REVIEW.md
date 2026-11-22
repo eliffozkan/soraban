@@ -1,5 +1,32 @@
 # SORABAN — Milestone 2 schema review
 
+**Episode sprint:** the current drafts now include standalone episodes, moderated
+nicknames and episode rankings (`0003_episodes_profiles.sql`). They have not been
+executed. The successful disposable test recorded below applies only to the earlier
+Milestone 2 revision, not these changes. New execution needs separate approval.
+
+`game_days` now distinguishes season rows (date/day number) from the two standalone
+keys (no season day number). Only season dates are unique; legacy calendar queries
+and 30-day publication explicitly exclude standalone rows. Existing guesses,
+progress, scoring, `daily_scores` and voiding are shared; no second scoring engine.
+Presentation publication needs five verified questions, not 30 season rows.
+
+New public reads grant only safe episode metadata/leaderboard RPCs to anon. Profile
+and nickname RPCs require authenticated identity. Private moderation/import functions
+have no client/service-role EXECUTE or schema usage. Nickname changes lock the
+profile, use server time and persist counters. Names stay unapproved until manual
+review; hide/lock survives edits. Only approved names or the fixed anonymous fallback
+enter rankings; UUIDs/emails/tokens/reasons are never returned. Ranking uses raw-score
+rank and private deterministic ordering. Public totals exclude hidden identities.
+
+Owner import is atomic across both episode publications, checks coverage/uniqueness
+and human verification attestations, and refuses changed published content. An
+identical reimport preserves IDs, guesses, voids and scores. The offline tool writes
+private SQL outside the repo, never executes it and never fetches source URLs.
+An attestation is not independent fact checking. Basic profanity filtering cannot
+replace manual moderation; anonymous re-registration/abuse still needs launch controls.
+See `supabase/EPISODES.md` for content format and exact approval-gated commands.
+
 Specification v0.3: five questions/day, 30 days, positive values through 1e15.
 Both drafts were applied successfully only inside the approved disposable
 PostgreSQL container, which has been removed. **Supabase/shared/live databases

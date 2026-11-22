@@ -10,6 +10,15 @@ Source: GAUSS Game Design Document v0.1 (13 November 2026) and reviewed feedback
 SORABAN is a browser-based, mobile-first daily numerical estimation game about Middle East Technical University (ODTÜ/METU). It is for *anyone interested in ODTÜ*, not just enrolled students. It is inspired by the public gameplay patterns of the Turkish Fermi game (fermi.tr), but must have distinct original branding, layout, copy and question content. Do not copy third-party protected code, private APIs, designs, assets or question banks.
 
 ### Season and rules
+Presentation MVP: independent `demo` (undated) and `2026-11-22` episodes each have
+five distinct questions and remain playable after their labelled dates. They use
+the same immutable guesses, raw scoring and void rules, but separate completed
+scores/boards and no season day number. They neither start nor reserve dates in
+the future 30-day season. Anonymous identities qualify for these presentation
+boards; public nicknames require approval or use the anonymous fallback. Zeynep
+owns the ten verified questions; correct values/reasoning/source data stay private.
+The 30-day season rules below remain available and are not automatically activated.
+
 - Season 1: 30 consecutive days; 5 questions per day; **150 verified questions**, with a target of 20 backups. Content is researched separately and must not be fabricated.
 - Everyone gets the same five questions on a given day. One locked guess per player per question. API totals derive from published positions; completion and score use nonvoid questions.
 - Public questions may have an optional category: `kampus`, `akademik`, `yurt-yemek`, `tarih-kultur`, `eymir-doga`, or `bilim-topluluklar`, matching Neris's category system.
