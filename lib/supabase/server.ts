@@ -9,10 +9,13 @@ export async function createSupabaseServerClient() {
   const { url, key } = getSupabasePublicConfig();
   const cookieStore = await cookies();
   return createServerClient(url, key, {
+    cookieOptions: { sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" },
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (cookiesToSet) => {
-        // Fail visibly in read-only renders rather than silently losing refreshed sessions.
+        // API responses always apply private/no-store, Pragma and Expires, including
+        // error paths. Do not swallow cookie-write failures or use in read-only renders.
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       },
     },
