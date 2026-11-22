@@ -14,7 +14,7 @@ The runner downloads `postgres:17-alpine` if needed and creates a uniquely named
 temporary container with **no network, host ports, persistent volumes or password**.
 Database files live in a disposable tmpfs. It
 executes psql inside it: `bootstrap.sql`, both drafts in order, then `fixtures.sql`.
-It prints six essential result groups and stops its own container in `finally`.
+It prints five essential result groups and stops its own container in `finally`.
 The local trust setting is for this isolated container only, never a shared DB.
 
 Prepared checks: exact publication/answer coverage/consecutive dates; permissions,
@@ -25,7 +25,12 @@ use a temporary schedule relative to the test clock, not a real season start.
 Running across midnight may close the test day; rerun in a fresh container then.
 
 These are PostgreSQL tests with minimal `auth.users`/`auth.uid()` test doubles,
-not Supabase Auth, PostgREST or browser tests. They have **not been executed**.
+not Supabase Auth, PostgREST or browser tests. The explicitly approved run on
+22 November 2026 passed all five groups with exit 0; no runtime fixes were needed.
+An independent Docker check confirmed no matching containers remained afterward.
+No `.env.local` or live-service access occurred. See `docs/SCHEMA_REVIEW.md` for
+the tested cases and remaining gaps; the parallel tests do not force every lock
+interleaving or exercise a midnight/concurrent-void race.
 
 For actual local end-to-end gameplay, after separate approval:
 

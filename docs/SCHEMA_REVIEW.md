@@ -1,8 +1,9 @@
 # SORABAN — Milestone 2 schema review
 
 Specification v0.3: five questions/day, 30 days, positive values through 1e15.
-**Both drafts remain unapplied.** Static parsing and mocked HTTP tests do not
-establish runtime RLS, SQL scoring, commit or concurrency correctness.
+Both drafts were applied successfully only inside the approved disposable
+PostgreSQL container, which has been removed. **Supabase/shared/live databases
+remain unapplied.** Full Supabase Auth/PostgREST verification is still pending.
 
 ## Schema and privileges
 
@@ -79,16 +80,38 @@ without execution. Node tests use mocked RPC responses with real handlers, inclu
 no response before the RPC promise resolves. Existing session/scoring tests remain.
 These checks do not prove runtime database permissions, locks or scoring agreement.
 
-supabase/tests/integration.py is prepared but **not run**. It creates a fresh
-PostgreSQL 17 container with no network, host ports, persistent volumes or password; applies
-minimal Auth/role test doubles, both drafts and synthetic fixtures; tests publication,
-ACLs/RLS, raw scoring, rollback, same/different-question races, isolation, completion
-and voiding; then removes its own container. It does not test Supabase Auth/JWT.
+On 22 November 2026, Elif explicitly approved and the agent executed
+`python3 -u supabase/tests/integration.py --approved-disposable-execution` once.
+It exited 0 with all five result groups passing, without a SQL or runner fix:
 
-Minimum next approval: execute that disposable harness only, then separately verify
-local Supabase Auth/PostgREST/HTTP cookies and commit behavior before adapter
-integration. No live migration, user, start date or deployment is authorized by
-PR review. See supabase/tests/README.md.
+- Exact publication count, private-answer coverage and consecutive schedule.
+- Direct-role ACL denials, answer secrecy, missing-identity rejection and released-day RLS.
+- SQL scoring golden cases (1e-10 tolerance), subnormal inputs and invalid guesses.
+- Parallel same-question attempts returning the same immutable result; changed-guess
+  retry; parallel final questions completing the day; caller isolation, closed days
+  and rolled-back attempts leaving no progress.
+- Void recalculation, completion of a previously incomplete player, and rejection
+  of voiding the final valid question.
+
+Docker's effective endpoint was verified as a local Unix socket before execution.
+The runner used a fresh PostgreSQL 17 container, network none, tmpfs data, no host
+ports or persistent volumes, minimal Auth/role test doubles and synthetic fixtures.
+No `.env.local` read or existing database connection occurred. The runner stopped
+its container; a separate `docker ps -a` filtered to its unique test-name prefix
+returned no containers, matching the empty pre-run baseline.
+
+These results verify the tested PostgreSQL paths, not every lock interleaving.
+The parallel cases do not impose a deterministic lock barrier. Midnight lock waits,
+simultaneous void/submission, Supabase JWT/Auth behavior, inherited real-project
+grants, HTTP cookies and PostgREST commit/rollback preferences remain unverified.
+Owners remain trusted; published-content freezing is an operational rule, not
+protection against an owner bypassing the maintenance functions.
+
+Minimum next approval: start a fresh disposable local Supabase stack, apply both
+drafts there and verify Auth/PostgREST/HTTP cookies and commit behavior with local
+synthetic users/content before adapter integration. The PostgreSQL-only approval
+does not authorize that stack or a live migration/user/deployment. See
+`supabase/tests/README.md`.
 
 References: [Supabase functions](https://supabase.com/docs/guides/database/functions),
 [PostgREST transactions](https://docs.postgrest.org/en/stable/references/transactions.html),
