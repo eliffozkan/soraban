@@ -1,10 +1,10 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { GameMain } from "@/components/game/game-main";
+import { HomeScreen } from "@/components/game/home-screen";
 
 export default function Home() {
   return (
-    <PlaceholderPage title="SORABAN">
-      <p>ODTÜ hakkında günlük sayısal tahmin oyunu. Her gün altı soru, her soru için tek tahmin.</p>
-      <p className="mt-4">SORABAN hazırlanıyor. İlk sezonun başlangıç tarihi yakında duyurulacak.</p>
-    </PlaceholderPage>
+    <GameMain title="SORABAN: ODTÜ hakkında günlük sayı tahmin oyunu" hideTitle>
+      <HomeScreen />
+    </GameMain>
   );
 }
