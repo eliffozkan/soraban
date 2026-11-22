@@ -25,7 +25,8 @@
   Report missing integrations and approvals accurately; do not claim RLS is tested
   without isolated database tests. Auth refresh/proxy is deferred until auth is built.
 
-- Follow `CONTRIBUTING.md`, `docs/TEAM.md`, and `docs/API_CONTRACT.md`.
+- Follow `CONTRIBUTING.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, and
+  `docs/INTEGRATION_DECISIONS.md` for auth ownership, test/CI and product rules.
   Agent briefs: `docs/agents/BACKEND.md`, `docs/agents/FRONTEND.md`, `docs/agents/UIUX.md`.
   Claude also reads `CLAUDE.md`. All three agents work on distinct branches/owned files.
 - Do not claim proposed endpoints exist; only `/api/health` currently works.
