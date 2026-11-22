@@ -1,4 +1,6 @@
-/** Backend design types. No successful gameplay response is served in Milestone 1. */
+/** Backend wire types; see docs/API_CONTRACT.md. Frontend-owned types migrate separately. */
+import type { CategoryKey } from "../../components/ui/categories";
+export type QuestionCategory = CategoryKey;
 export type ApiError = { error: { code: string; message: string } };
 export type SessionReady = { status: "ready"; isAnonymous: boolean };
 export type GuessRequest = { questionId: string; guess: number };
@@ -7,6 +9,7 @@ export type QuestionPublic = {
   position: number;
   prompt: string;
   unit: string;
+  category?: QuestionCategory;
   state: "unanswered" | "answered" | "void";
 };
 export type RevealedGuess = {
@@ -17,7 +20,7 @@ export type RevealedGuess = {
   reasoning: string;
   sourceUrl: string;
 };
-// Dynamic internal count; widening the shared contract's literal 6 needs team review.
+// Total published positions; completion/answeredCount exclude void questions.
 export type DailyProgress = {
   answeredCount: number;
   totalCount: number;
@@ -27,5 +30,4 @@ export type DailyProgress = {
 export type GameDay = { id: string; number: number; date: string };
 export type TodayResponse = { day: GameDay; questions: QuestionPublic[]; progress: DailyProgress };
 export type GuessResponse = { guess: RevealedGuess; progress: DailyProgress };
-// /api/me/today's exact response envelope is not yet agreed; reuse these building
-// blocks after that review instead of publishing a competing success shape.
+export type MyTodayResponse = { day: GameDay; guesses: RevealedGuess[]; progress: DailyProgress };

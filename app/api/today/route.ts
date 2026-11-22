@@ -1,11 +1,12 @@
 import { apiResponse } from "../../../lib/data/http";
-import { requireGameplayRepository } from "../../../lib/data/gameplay";
+import { getToday } from "../../../lib/data/gameplay";
 import { createSupabaseServerClient } from "../../../lib/supabase/server";
 import { requireUser } from "../../../lib/supabase/session";
 
 export async function GET() {
   return apiResponse(async () => {
-    await requireUser(await createSupabaseServerClient());
-    return requireGameplayRepository();
+    const client = await createSupabaseServerClient();
+    await requireUser(client);
+    return getToday(client);
   });
 }

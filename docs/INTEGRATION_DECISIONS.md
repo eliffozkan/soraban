@@ -1,7 +1,7 @@
 # SORABAN — Auth, test and decision ownership
 Accepted team integration decision · 22 November 2026
 
-This decision resolves the cross-owner questions raised by the frontend and backend agents. Read with `docs/TEAM.md` and `docs/API_CONTRACT.md`. APIs below are **planned, not yet implemented**. This document does not authorize a live database migration, production auth-setting change, or deployment.
+This decision resolves the cross-owner questions raised by the frontend and backend agents. Read with `docs/TEAM.md` and `docs/API_CONTRACT.md`. Backend implementation is in progress; database runtime verification is pending. This document does not authorize a live database migration, production auth-setting change, or deployment.
 
 ## Anonymous session: exact split
 
@@ -37,9 +37,10 @@ Elif is the **product decision owner** and records decisions in the specificatio
 | Topic | Working rule / decision | Gate |
 | --- | --- | --- |
 | Numeric maximum | **1e15** for guess and positive correct value in TypeScript and SQL | Accepted for initial development; revisit as a separate change |
-| Season start | **Unset**; a configurable Istanbul-local start date will be approved by Elif when 180 verified questions and rollout are ready | Blocks production season publication, not mocks |
+| Season start | **Unset**; a configurable Istanbul-local start date will be approved by Elif when 150 verified questions and rollout are ready | Blocks production season publication, not mocks |
 | Equal scores | Raw, unrounded daily/season scores determine ties; equal raw scores **share rank**. Stable display order by completion timestamp, then player ID; this ordering does not change rank or points | Accepted for implementation, keep private IDs out of public DTOs |
-| Voided questions | Six fixed positions remain; `answeredCount` counts answered nonvoid questions, `totalCount` is six for UI positions, and completion is all **nonvoid** questions answered. A previously incomplete player becomes complete if all remaining valid questions were answered. Block voiding the final nonvoid question pending a later all-void-day rule | Elif authorizes exceptional voiding actions |
+| Daily questions and voiding | Five published positions; `totalCount` is their numeric count, `answeredCount` counts answered nonvoid questions, and completion is all **nonvoid** questions answered. A previously incomplete player becomes complete if all remaining valid questions were answered. Block voiding the final nonvoid question | Elif authorizes exceptional voiding actions |
+| Public category | Optional: `kampus`, `akademik`, `yurt-yemek`, `tarih-kultur`, `eymir-doga`, `bilim-topluluklar` | Existing Neris keys; Zeynep owns client type/mock updates |
 | Nicknames | Public leaderboard requires a linked/verified identity and an approved display name; until moderation exists, show an unavailable/empty public leaderboard state rather than unreviewed names. Proposal: 2–24 characters, Unicode-aware allowed characters, basic blocked names + manual review | Elif approves moderation rules before leaderboard launch |
 | Privacy notice | Elif owns the factual data-processing inventory and policy review (anonymous IDs, linked email where applicable, guesses and retention). Zeynep integrates the notice into the flow; Neris owns presentation. Do not invent legal guarantees; get appropriate KVKK/privacy review before public collection | Public launch gate |
 | Identity linking | Defer Google linking until account-conflict behavior and auth/RLS tests are agreed | Feature gate, not required for first anonymous session |
@@ -50,3 +51,4 @@ Elif is the **product decision owner** and records decisions in the specificatio
 - People already on `feat/backend-foundation`, `feat/frontend-flow`, or `feat/ui-system` should **fetch and merge** updated `main` into their own branch after this decision lands; do not reset, force-push, discard local work or create a duplicate repository.
 - The historic rename PR has already merged; old branch names are not outstanding migrations. There is no Figma requirement. Neris writes the reusable UI code directly.
 - Shared API contracts must not silently drift. Update the contract in a reviewed documentation change before implementing incompatible endpoint/DTO changes.
+- Milestone 2 completes the coordinated backend/spec/SQL five-question change, preserving PR #8's accepted literal-five DTO and category registry. It adopts Zeynep's proposed `{ day, guesses, progress }` for `/api/me/today`; her owned files remain untouched. Zeynep reviews server support and HTTP error mapping before wiring the real adapter; Neris reviews display impact.
