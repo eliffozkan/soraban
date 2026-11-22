@@ -26,6 +26,8 @@ export function errorMessage(error: unknown): string {
       return "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.";
     case "RATE_LIMITED":
       return "Çok fazla deneme oldu. Biraz bekleyip tekrar dene.";
+    case "SERVICE_UNAVAILABLE":
+      return "Servis şu an yanıt vermiyor. Biraz sonra tekrar dene.";
     case "DAY_UNAVAILABLE":
       return "Bugünün soruları henüz hazır değil.";
     case "DAY_CLOSED":
