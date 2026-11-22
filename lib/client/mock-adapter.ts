@@ -23,7 +23,7 @@ import {
 
 /**
  * Ekranların farklı durumlarını denemek için senaryolar:
- * - "normal": altı soru, her şey yolunda
+ * - "normal": beş soru, her şey yolunda
  * - "with-void": 4. soru iptal edilmiş (void)
  * - "day-unavailable": bugünün soruları yayınlanmamış (503)
  * - "rate-limited": oturum açma isteği sınırlandı (429)

@@ -20,8 +20,8 @@ describe("mock SorabanClient", () => {
     await expect(client.ensureGuestSession()).resolves.toEqual({ status: "ready", isAnonymous: true });
     await expect(client.ensureGuestSession()).resolves.toEqual({ status: "ready", isAnonymous: true });
     const today = await client.getToday();
-    expect(today.questions).toHaveLength(6);
-    expect(today.progress).toEqual({ answeredCount: 0, totalCount: 6, completed: false, scoreRaw: null });
+    expect(today.questions).toHaveLength(5);
+    expect(today.progress).toEqual({ answeredCount: 0, totalCount: 5, completed: false, scoreRaw: null });
   });
 
   it("never exposes answers in public questions", async () => {
@@ -55,7 +55,7 @@ describe("mock SorabanClient", () => {
     expect(await errorCode(client.submitGuess({ questionId: "ornek-soru-1", guess }))).toBe("INVALID_GUESS");
   });
 
-  it("completes the day after all six and returns a server-style daily score", async () => {
+  it("completes the day after all five and returns a server-style daily score", async () => {
     const client = createMockClient();
     await client.ensureGuestSession();
     const { questions } = await client.getToday();
@@ -76,7 +76,7 @@ describe("mock SorabanClient", () => {
     for (const q of questions.filter((q) => q.state !== "void")) {
       last = await client.submitGuess({ questionId: q.id, guess: 10 });
     }
-    expect(last?.progress).toMatchObject({ answeredCount: 5, totalCount: 6, completed: true });
+    expect(last?.progress).toMatchObject({ answeredCount: 4, totalCount: 5, completed: true });
   });
 
   it("supports failure scenarios", async () => {

@@ -7,27 +7,15 @@
  * Elif ile netleştirilmeden gerçek uç noktaya bağlanmamalıdır.
  */
 
+import type { CategoryKey } from "../../components/ui/categories";
+
 /** Tahmin ve doğru değer için ortak üst sınır (lib/game/scoring.ts ile aynı). */
 export const MAX_NUMERIC_VALUE = 1e15;
 
-/** Her gün sabit altı soru pozisyonu vardır. */
-export const QUESTIONS_PER_DAY = 6;
+/** Her gün sabit beş soru pozisyonu vardır (ekip kararı, 22 Kasım 2026). */
+export const QUESTIONS_PER_DAY = 5;
 
 export type QuestionState = "unanswered" | "answered" | "void";
-
-/**
- * Sezonun altı kategorisi — PROPOSAL.
- * Neris'in soru kartı ve özet ekranı kategori gösteriyor ama sözleşmede bu alan
- * henüz yok. Elif `QuestionPublic`'e eklemeyi onaylayana kadar alan isteğe
- * bağlıdır: ekranlar varsa gösterir, yoksa gizler. Cevap hakkında bilgi vermez.
- */
-export type QuestionCategory =
-  | "kampus"
-  | "akademik"
-  | "yurt-yemek"
-  | "tarih-kultur"
-  | "eymir-doga"
-  | "bilim-topluluklar";
 
 /** Tahminden önce görülebilen tek soru verisi. Cevap/açıklama/kaynak YOK. */
 export type QuestionPublic = {
@@ -36,8 +24,11 @@ export type QuestionPublic = {
   prompt: string;
   unit: string;
   state: QuestionState;
-  /** PROPOSAL (yukarıya bak): sözleşmeye eklenene kadar isteğe bağlı. */
-  category?: QuestionCategory;
+  /**
+   * Sorunun kategorisi (onaylandı, 22 Kasım 2026). İsteğe bağlı: yoksa arayüz
+   * kategori göstermez. Tek kategori listesi Neris'in components/ui/categories.ts dosyasıdır.
+   */
+  category?: CategoryKey;
 };
 
 /** Sunucu tahmini kilitledikten SONRA dönen sonuç. */

@@ -5,15 +5,16 @@
  * ve kaynak bağlantıları gerçek bir bilgiye dayanmaz. Gerçek sorular bu depoya
  * veya istemci koduna asla eklenmez.
  */
-import type { GameDay, QuestionCategory } from "./types";
+import type { CategoryKey } from "../../components/ui/categories";
+import type { GameDay } from "./types";
 
 export type MockQuestionFixture = {
   id: string;
   position: number;
   prompt: string;
   unit: string;
-  /** ÖRNEK kategori (PROPOSAL alanı, bkz. types.ts). */
-  category: QuestionCategory;
+  /** ÖRNEK kategori. */
+  category: CategoryKey;
   /** ÖRNEK doğru değer (uydurma). */
   correctAnswer: number;
   reasoning: string;
@@ -89,16 +90,5 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
     sourceUrl: "https://example.org/ornek/5",
     cannedScoreRaw: 26.1439372640,
-  },
-  {
-    id: "ornek-soru-6",
-    position: 6,
-    prompt: "ÖRNEK SORU 6: Hayali bir ormanda kaç ağaç vardır?",
-    unit: "ağaç",
-    category: "eymir-doga",
-    correctAnswer: 1000000,
-    reasoning: "ÖRNEK açıklama: bu değer tamamen uydurmadır.",
-    sourceUrl: "https://example.org/ornek/6",
-    cannedScoreRaw: 41.0,
   },
 ];

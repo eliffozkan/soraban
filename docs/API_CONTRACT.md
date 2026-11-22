@@ -14,14 +14,21 @@ Status: **proposal; not implemented** | Owners: Elif (provider), Zeynep (consume
 type QuestionPublic = {
   id: string; position: number; prompt: string; unit: string;
   state: "unanswered" | "answered" | "void";
+  category?: CategoryKey; // optional; see "Question category" below
 };
 type RevealedGuess = {
   questionId: string; guess: number; scoreRaw: number;
   correctAnswer: number; reasoning: string; sourceUrl: string;
 };
-type DailyProgress = { answeredCount: number; totalCount: 6; completed: boolean; scoreRaw: number | null };
+type DailyProgress = { answeredCount: number; totalCount: 5; completed: boolean; scoreRaw: number | null };
 type ApiError = { error: { code: string; message: string } };
 ```
+
+## Question category — accepted 22 Nov 2026
+`category` is optional on `QuestionPublic`. Allowed values are the six keys in `components/ui/categories.ts` (`CategoryKey`: `kampus`, `akademik`, `yurt-yemek`, `tarih-kultur`, `eymir-doga`, `bilim-topluluklar`); do not keep a second category list. It reveals nothing about the answer. When the field is missing, the UI shows no category. SQL/backend support is coordinated with Elif.
+
+## Questions per day — accepted 22 Nov 2026
+Each day has **five** fixed question positions (`position` 1–5, 1-based; UI progress uses the same numbering). `totalCount` is 5.
 
 ## POST /api/session/anonymous — planned
 Elif owns this endpoint. If an authenticated Supabase session exists, preserve it and return its anonymity status; otherwise establish a new anonymous Supabase Auth session with secure SSR cookies. Zeynep calls it through a single client adapter before `GET /api/today`; Neris supplies only UI states. The endpoint is idempotent with respect to an existing valid session; do not replace a linked identity. No tokens or raw identifiers are returned. No-store response example: `{ "status": "ready", "isAnonymous": true }`. Fail safely on auth-service errors or rate limits. See `docs/INTEGRATION_DECISIONS.md` for ownership and tests.
@@ -32,12 +39,12 @@ Requires an authenticated Supabase session (anonymous Auth users count). The han
 {
   "day": { "id": "day-uuid", "number": 1, "date": "YYYY-MM-DD" },
   "questions": [
-    { "id": "question-uuid", "position": 1, "prompt": "Synthetic example question?", "unit": "adet", "state": "unanswered" }
+    { "id": "question-uuid", "position": 1, "prompt": "Synthetic example question?", "unit": "adet", "state": "unanswered", "category": "kampus" }
   ],
-  "progress": { "answeredCount": 0, "totalCount": 6, "completed": false, "scoreRaw": null }
+  "progress": { "answeredCount": 0, "totalCount": 5, "completed": false, "scoreRaw": null }
 }
 ```
-Example is illustrative and not season content. The live response contains exactly six questions when a day is published. For already answered questions, previous reveal data may be obtained from an authenticated `GET /api/me/today` call after permission checks, rather than included by default in the public question list.
+Example is illustrative and not season content. The live response contains exactly five questions when a day is published. For already answered questions, previous reveal data may be obtained from an authenticated `GET /api/me/today` call after permission checks, rather than included by default in the public question list.
 
 ## POST /api/guesses — planned
 ```json
@@ -51,7 +58,7 @@ Server validates identity, question, clock, bounds and single immutable guess; t
     "correctAnswer": 2500, "reasoning": "Synthetic example reasoning",
     "sourceUrl": "https://example.org/synthetic"
   },
-  "progress": { "answeredCount": 1, "totalCount": 6, "completed": false, "scoreRaw": null }
+  "progress": { "answeredCount": 1, "totalCount": 5, "completed": false, "scoreRaw": null }
 }
 ```
 These values are synthetic, not real METU facts. Idempotent retry for the same player/question returns the originally stored result, not another attempt. Invalid/unauthorized/closed-day errors do not reveal correct answers.
