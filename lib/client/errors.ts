@@ -18,6 +18,7 @@ export class SorabanClientError extends Error {
     return (
       this.code === "NETWORK_ERROR" ||
       this.code === "RATE_LIMITED" ||
+      this.code === "SERVICE_UNAVAILABLE" ||
       this.code === "DAY_UNAVAILABLE"
     );
   }

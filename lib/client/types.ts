@@ -123,7 +123,9 @@ export type ApiErrorCode =
   | "ALREADY_SUBMITTED" // 409
   | "DAY_CLOSED" // 409
   | "DAY_UNAVAILABLE" // 503
-  | "RATE_LIMITED" // 429 — PROPOSAL: isim Elif ile netleşecek
+  | "RATE_LIMITED" // 429 — sunucuda AUTH_RATE_LIMITED olarak gelir
+  | "SERVICE_UNAVAILABLE" // 503 — sunucunun AUTH_UNAVAILABLE / SERVICE_UNAVAILABLE kodları
+  | "ORIGIN_FORBIDDEN" // 403 — istek aynı kökenden gelmedi (yapılandırma hatası)
   | "NETWORK_ERROR" // yalnızca istemci: istek hiç ulaşmadı
   | "MALFORMED_RESPONSE"; // yalnızca istemci: yanıt beklenen şekilde değil
 
