@@ -1,11 +1,17 @@
 -- DRAFT ONLY. Not applied. Human review and explicit execution approval required.
--- No seed data, season start, auth configuration, or gameplay RPC is included.
+-- Apply with 0002_gameplay.sql only after separate execution approval.
+-- No seed data, season start, or auth configuration is included.
 begin;
 
 -- Initial migration: fail rather than reuse a pre-existing schema with unknown objects/ACLs.
 create schema soraban_private;
 revoke all on schema soraban_private from public, anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated;
+
+-- Reviewed publication count. Table capacity bounds below match this MVP (5).
+create function soraban_private.questions_per_day() returns integer
+language sql immutable set search_path = '' as $$ select 5 $$;
+revoke all on function soraban_private.questions_per_day() from public, anon, authenticated, service_role;
 
 create table public.game_days (
   id uuid primary key default gen_random_uuid(),
@@ -17,9 +23,10 @@ create table public.game_days (
 create table public.public_questions (
   id uuid primary key default gen_random_uuid(),
   game_day_id uuid not null references public.game_days(id),
-  position smallint not null check (position between 1 and 6),
+  position smallint not null check (position between 1 and 5),
   prompt text not null check (length(trim(prompt)) > 0),
   unit text not null check (length(trim(unit)) > 0),
+  category text check (category in ('kampus', 'akademik', 'yurt-yemek', 'tarih-kultur', 'eymir-doga', 'bilim-topluluklar')),
   voided_at timestamptz check (isfinite(voided_at)),
   -- Internal editorial notes may contain spoilers; excluded from client column grants.
   void_reason text check (length(trim(void_reason)) > 0),
@@ -49,7 +56,7 @@ create table public.guesses (
   guess double precision not null check (guess > 0 and guess <= 1e15),
   score double precision not null check (score >= 0 and score <= 100),
   -- Logical submission time, not a physical WAL commit timestamp.
-  -- The future RPC must set this from its trusted post-lock admission time.
+  -- The submission RPC sets this from its trusted post-lock admission time.
   committed_at timestamptz not null default statement_timestamp() check (isfinite(committed_at)),
   unique (player_id, question_id)
 );
@@ -62,7 +69,7 @@ create table public.daily_scores (
   player_id uuid not null references auth.users(id) on delete cascade,
   game_day_id uuid not null references public.game_days(id),
   score double precision not null check (score >= 0 and score <= 100),
-  question_count smallint not null check (question_count between 1 and 6),
+  question_count smallint not null check (question_count between 1 and 5),
   completed_at timestamptz not null check (isfinite(completed_at)),
   primary key (player_id, game_day_id)
 );
@@ -82,7 +89,7 @@ revoke all on soraban_private.private_answers from public, anon, authenticated, 
 -- Clients must select these columns explicitly: SELECT * on questions is denied.
 grant select (id, day_number, play_date, published)
   on public.game_days to anon, authenticated;
-grant select (id, game_day_id, position, prompt, unit, voided_at)
+grant select (id, game_day_id, position, prompt, unit, category, voided_at)
   on public.public_questions to anon, authenticated;
 grant select (player_id, nickname, nickname_approved)
   on public.player_profiles to authenticated;
@@ -106,9 +113,9 @@ create policy own_daily_scores_read on public.daily_scores for select to authent
   using ((select auth.uid()) = player_id);
 
 -- Intentionally NO answer policy, client write policy, leaderboard view or SECURITY
--- DEFINER function. Transactional submission/reveal must be reviewed in the next phase.
+-- DEFINER function in this file. Reviewed gameplay RPCs are in 0002_gameplay.sql.
 -- service_role is explicitly denied direct access to these tables too: BYPASSRLS
--- does not bypass ACLs. Use a reviewed, narrowly granted authenticated RPC later;
+-- does not bypass ACLs. Use the narrowly granted authenticated RPCs in 0002;
 -- the current publishable-key server client cannot write or read private answers.
 -- No broad default privileges, existing functions, auth settings or exposed schemas
 -- are changed. Future tables/functions still need their own explicit ACL review.
