@@ -1,6 +1,6 @@
 import "server-only";
+import { CATEGORIES } from "../../components/ui/categories";
 import {
-  QUESTION_CATEGORIES,
   type DailyProgress, type GameDay, type GuessResponse, type MyTodayResponse,
   type QuestionPublic, type RevealedGuess, type TodayResponse,
 } from "../game/contracts";
@@ -54,9 +54,8 @@ function question(value: unknown): QuestionPublic {
     unit: text(row.unit), state: row.state,
   };
   if (row.category !== undefined && row.category !== null) {
-    const category = QUESTION_CATEGORIES.find(key => key === row.category);
-    if (!category) return unavailable();
-    result.category = category;
+    if (typeof row.category !== "string" || !Object.hasOwn(CATEGORIES, row.category)) return unavailable();
+    result.category = row.category as QuestionPublic["category"];
   }
   return result;
 }

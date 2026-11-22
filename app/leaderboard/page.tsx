@@ -1,5 +1,13 @@
-import { PlaceholderPage } from "@/components/placeholder-page";
+import type { Metadata } from "next";
+import { GameMain } from "@/components/game/game-main";
+import { LeaderboardScreen } from "@/components/game/leaderboard-screen";
+
+export const metadata: Metadata = { title: "Sıralama" };
 
 export default function Page() {
-  return <PlaceholderPage title="Sıralama"><p>İlk sezonun sıralaması oyun başladıktan sonra burada yer alacak.</p></PlaceholderPage>;
+  return (
+    <GameMain title="Sıralama">
+      <LeaderboardScreen />
+    </GameMain>
+  );
 }

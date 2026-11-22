@@ -13,16 +13,23 @@ Status: backend implemented; SQL unapplied and database integration unverified. 
 ```ts
 type QuestionPublic = {
   id: string; position: number; prompt: string; unit: string;
-  category?: "kampus" | "akademik" | "yurt-yemek" | "tarih-kultur" | "eymir-doga" | "bilim-topluluklar";
   state: "unanswered" | "answered" | "void";
+  category?: CategoryKey; // optional; see "Question category" below
 };
 type RevealedGuess = {
   questionId: string; guess: number; scoreRaw: number;
   correctAnswer: number; reasoning: string; sourceUrl: string;
 };
-type DailyProgress = { answeredCount: number; totalCount: number; completed: boolean; scoreRaw: number | null };
+type DailyProgress = { answeredCount: number; totalCount: 5; completed: boolean; scoreRaw: number | null };
 type ApiError = { error: { code: string; message: string } };
 ```
+
+## Question category — accepted 22 Nov 2026
+`category` is optional on `QuestionPublic`. Allowed values are the six keys in `components/ui/categories.ts` (`CategoryKey`: `kampus`, `akademik`, `yurt-yemek`, `tarih-kultur`, `eymir-doga`, `bilim-topluluklar`); do not keep a second application category list. It reveals nothing about the answer. When missing, the UI shows no category. Backend validation uses that existing registry; the unapplied SQL CHECK mirrors it for database validation.
+
+## Questions per day — accepted 22 Nov 2026
+Each day has **five** fixed question positions (`position` 1–5, 1-based; UI progress uses the same numbering). `totalCount` is 5.
+Backend counts/aggregation derive from actual rows rather than a fixed denominator. A future publication-count change requires coordinated SQL/contract/client changes; this MVP preserves the accepted literal-five client type.
 
 ## POST /api/session/anonymous
 Elif owns this endpoint. If an authenticated Supabase session exists, preserve it and return its anonymity status; otherwise establish a new anonymous Supabase Auth session with secure SSR cookies. Zeynep calls it through a single client adapter before `GET /api/today`; Neris supplies only UI states. The endpoint is idempotent with respect to an existing valid session; do not replace a linked identity. No tokens or raw identifiers are returned. No-store response example: `{ "status": "ready", "isAnonymous": true }`. Fail safely on auth-service errors or rate limits. See `docs/INTEGRATION_DECISIONS.md` for ownership and tests.
@@ -33,7 +40,7 @@ Requires an authenticated Supabase session (anonymous Auth users count). The han
 {
   "day": { "id": "day-uuid", "number": 1, "date": "YYYY-MM-DD" },
   "questions": [
-    { "id": "question-uuid", "position": 1, "prompt": "Synthetic example question?", "unit": "adet", "state": "unanswered" }
+    { "id": "question-uuid", "position": 1, "prompt": "Synthetic example question?", "unit": "adet", "state": "unanswered", "category": "kampus" }
   ],
   "progress": { "answeredCount": 0, "totalCount": 5, "completed": false, "scoreRaw": null }
 }
@@ -75,4 +82,4 @@ Returns ranked entries with moderated public nickname, `scoreRaw`, `rank`, and o
 - `GET /api/health` is already implemented (liveness only, not DB readiness).
 - No cross-origin secrets, no live migrations without approval, and no caching of personalized/revealed payloads.
 - Zeynep uses typed mock adapters with the same shapes until the backend endpoints are verified; no need to await working Supabase for UI work.
-- Client migration checklist: replace literal-six progress counts with `number`, use five mock positions, add optional category, keep the proposed `MyTodayResponse`, and map the documented HTTP failures. All `lib/client/**` and UI/mock test edits remain with Zeynep. Do not switch the real UI adapter before approved DB/Auth/HTTP verification.
+- Client integration checklist: five positions/category are already merged in PR #8 and remain unchanged. This backend accepts Zeynep's `MyTodayResponse`; review void-completion semantics and map the documented HTTP failures in her real adapter. All client/UI test edits remain with Zeynep. Do not switch adapters before approved DB/Auth/HTTP verification.

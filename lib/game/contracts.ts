@@ -1,8 +1,6 @@
 /** Backend wire types; see docs/API_CONTRACT.md. Frontend-owned types migrate separately. */
-export const QUESTION_CATEGORIES = [
-  "kampus", "akademik", "yurt-yemek", "tarih-kultur", "eymir-doga", "bilim-topluluklar",
-] as const;
-export type QuestionCategory = typeof QUESTION_CATEGORIES[number];
+import type { CategoryKey } from "../../components/ui/categories";
+export type QuestionCategory = CategoryKey;
 export type ApiError = { error: { code: string; message: string } };
 export type SessionReady = { status: "ready"; isAnonymous: boolean };
 export type GuessRequest = { questionId: string; guess: number };
