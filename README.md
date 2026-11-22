@@ -6,9 +6,10 @@ branches. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup/PR workflow,
 [team ownership](docs/TEAM.md), and the [proposed API contract](docs/API_CONTRACT.md).
 Neris implements React/Tailwind UI directly (no Figma handoff).
 
-SORABAN was renamed from GAUSS on 22 November 2026. Internal compatibility names
-are documented in [docs/TEAM.md](docs/TEAM.md#retained-internal-names). Read [the working specification](docs/GAUSS_CODEX_CONTEXT.md)
-first; version 0.2 overrides the earlier GDD.
+Read [the working specification](docs/SORABAN_CODEX_CONTEXT.md) first; version 0.2
+overrides the earlier GDD. Active project references and the unapplied private schema
+use SORABAN/soraban consistently. See [checkout naming](docs/TEAM.md#naming-and-checkout-paths)
+for historical references and moving an existing local checkout after Codex exits.
 
 ## Local development
 
@@ -87,7 +88,7 @@ separate private answers from public prompts, enable RLS and deny client writes.
 The unique player/question constraint supports future atomic locking; it is not a
 complete submission protocol. No answers are readable through client roles, even
 after guessing; a reviewed server transaction must implement safe reveal later.
-No public leaderboard projection exists yet. Keep `gauss_private` outside exposed
+No public leaderboard projection exists yet. Keep `soraban_private` outside exposed
 schemas. Do not execute or move the draft into active migrations without explicit
 human approval. No migrations, auth settings or external accounts were changed.
 

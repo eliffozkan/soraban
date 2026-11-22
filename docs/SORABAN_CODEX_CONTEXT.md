@@ -2,7 +2,8 @@
 Version: 0.2 (21 November 2026)
 Status: working specification for Codex and the project team
 Brand update: renamed GAUSS to SORABAN on 22 November 2026; rules remain v0.2.
-The historical filename and original GDD title are retained for existing references.
+Specification path: `docs/SORABAN_CODEX_CONTEXT.md`. Original GDD attribution is
+retained below; the document rename changes no specification rules.
 Source: GAUSS Game Design Document v0.1 (13 November 2026) and reviewed feedback. Where this document differs from v0.1, **this document takes precedence**.
 
 ## Product
