@@ -44,5 +44,6 @@ For actual local end-to-end gameplay, after separate approval:
    Confirm commit failures and `Prefer: tx=rollback` cannot return provisional
    answers through PostgREST.
 
-Zeynep can replace her mock adapter after this verification and her owned
-count/category/DTO updates. No production credentials or real questions are needed.
+PR #8 already supplies Zeynep's five-position/category types and game screens.
+She can replace the mock adapter after this verification and HTTP error/DTO review.
+No production credentials or real questions are needed.
