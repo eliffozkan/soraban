@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
+import { EpisodeRoute } from "@/components/game/episode-route";
 import { GameMain } from "@/components/game/game-main";
-import { PlayScreen } from "@/components/game/play-screen";
 
-export const metadata: Metadata = { title: "Günün soruları" };
+export const metadata: Metadata = { title: "Sorular" };
 
-export default function Page() {
+export default function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   return (
-    <GameMain title="Günün soruları" hideTitle>
-      <PlayScreen />
+    <GameMain title="Sorular" hideTitle>
+      <EpisodeRoute searchParams={searchParams} screen="play" />
     </GameMain>
   );
 }

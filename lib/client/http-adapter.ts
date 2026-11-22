@@ -17,10 +17,17 @@ import {
   QUESTIONS_PER_DAY,
   type ApiErrorCode,
   type DailyProgress,
+  type Episode,
+  type EpisodeLeaderboardEntry,
+  type EpisodeLeaderboardResponse,
+  type EpisodeResponse,
+  type EpisodeSlug,
   type GameDay,
   type GuestSession,
   type LeaderboardScope,
+  type MyEpisodeResponse,
   type MyTodayResponse,
+  type NicknameResponse,
   type QuestionPublic,
   type QuestionState,
   type RevealedGuess,
@@ -28,6 +35,7 @@ import {
   type TodayResponse,
 } from "./types";
 import { CATEGORIES, type CategoryKey } from "../../components/ui/categories";
+import { episodeBySlug } from "./episodes";
 
 export type HttpClientOptions = {
   /** Testler için. Varsayılan: "" (aynı köken, örn. "/api/today"). */
@@ -51,6 +59,9 @@ const SERVER_CODES: Record<string, ApiErrorCode> = {
   AUTH_UNAVAILABLE: "SERVICE_UNAVAILABLE",
   SERVICE_UNAVAILABLE: "SERVICE_UNAVAILABLE",
   ORIGIN_FORBIDDEN: "ORIGIN_FORBIDDEN",
+  EPISODE_NOT_FOUND: "EPISODE_NOT_FOUND",
+  NICKNAME_INVALID: "NICKNAME_INVALID",
+  NICKNAME_REJECTED: "NICKNAME_REJECTED",
 };
 
 function codeFromStatus(status: number): ApiErrorCode {
@@ -68,7 +79,10 @@ const MESSAGES: Record<ApiErrorCode, string> = {
   QUESTION_NOT_FOUND: "Soru bulunamadı.",
   ALREADY_SUBMITTED: "Bu soruya zaten cevap verdin.",
   DAY_CLOSED: "Bu soru artık tahmin kabul etmiyor.",
-  DAY_UNAVAILABLE: "Bugünün soruları henüz hazır değil.",
+  DAY_UNAVAILABLE: "Bu bölümün soruları henüz hazır değil.",
+  EPISODE_NOT_FOUND: "Bölüm bulunamadı.",
+  NICKNAME_INVALID: "Takma ad kurallara uymuyor.",
+  NICKNAME_REJECTED: "Bu takma ad kullanılamıyor.",
   RATE_LIMITED: "Çok fazla istek. Biraz sonra tekrar dene.",
   SERVICE_UNAVAILABLE: "Servis geçici olarak kullanılamıyor.",
   ORIGIN_FORBIDDEN: "İstek reddedildi.",
@@ -182,6 +196,68 @@ function parseMyToday(value: unknown): MyTodayResponse {
   };
 }
 
+/**
+ * Sunucunun döndürdüğü bölüm, istenen bölüm olmalı. Başka bir bölümün verisi
+ * gelirse (ör. yanlış yönlendirme) puanlar karışmasın diye reddedilir.
+ * Ad/tarih istemcinin kendi listesinden gelir.
+ */
+function parseEpisode(value: unknown, expected: EpisodeSlug): Episode {
+  const row = obj(value);
+  if (row.slug !== expected) return bad();
+  return { ...episodeBySlug(expected) };
+}
+
+function parseEpisodeResponse(slug: EpisodeSlug) {
+  return (value: unknown): EpisodeResponse => {
+    const row = obj(value);
+    return {
+      episode: parseEpisode(row.episode, slug),
+      questions: list(row.questions, parseQuestion),
+      progress: parseProgress(row.progress),
+    };
+  };
+}
+
+function parseMyEpisode(slug: EpisodeSlug) {
+  return (value: unknown): MyEpisodeResponse => {
+    const row = obj(value);
+    return {
+      episode: parseEpisode(row.episode, slug),
+      guesses: list(row.guesses, parseReveal),
+      progress: parseProgress(row.progress),
+    };
+  };
+}
+
+function parseLeaderboardEntry(value: unknown): EpisodeLeaderboardEntry {
+  const row = obj(value);
+  // Yalnızca bu dört alan alınır; sunucu yanlışlıkla kimlik gönderse bile ekrana çıkmaz.
+  return { rank: num(row.rank), nickname: str(row.nickname), scoreRaw: num(row.scoreRaw), isMe: row.isMe === true };
+}
+
+function parseEpisodeLeaderboard(slug: EpisodeSlug) {
+  return (value: unknown): EpisodeLeaderboardResponse => {
+    const row = obj(value);
+    let me: EpisodeLeaderboardResponse["me"] = null;
+    if (row.me !== null && row.me !== undefined) {
+      const m = obj(row.me);
+      me = { rank: num(m.rank), scoreRaw: num(m.scoreRaw) };
+    }
+    const entries = list(row.entries, parseLeaderboardEntry);
+    return {
+      episode: parseEpisode(row.episode, slug),
+      entries,
+      playerCount: row.playerCount === undefined ? entries.length : num(row.playerCount),
+      me,
+    };
+  };
+}
+
+function parseNickname(value: unknown): NicknameResponse {
+  const row = obj(value);
+  return { nickname: row.nickname === null ? null : str(row.nickname) };
+}
+
 // ---------------------------------------------------------------------------
 
 export function createHttpClient(options: HttpClientOptions = {}): SorabanClient {
@@ -259,6 +335,26 @@ export function createHttpClient(options: HttpClientOptions = {}): SorabanClient
       // GET /api/leaderboard henüz yok (sözleşme: "deferred"). Karar gereği tablo
       // "henüz yok" gösterilir. Uç nokta eklenince burada istek atılacak.
       return { scope, status: "unavailable" };
+    },
+
+    getEpisode(slug) {
+      return request("GET", `/api/episodes/${encodeURIComponent(slug)}`, parseEpisodeResponse(slug));
+    },
+
+    getMyEpisode(slug) {
+      return request("GET", `/api/episodes/${encodeURIComponent(slug)}/me`, parseMyEpisode(slug));
+    },
+
+    getEpisodeLeaderboard(slug) {
+      return request("GET", `/api/episodes/${encodeURIComponent(slug)}/leaderboard`, parseEpisodeLeaderboard(slug));
+    },
+
+    getNickname() {
+      return request("GET", "/api/me/nickname", parseNickname);
+    },
+
+    setNickname(nickname) {
+      return request("POST", "/api/me/nickname", parseNickname, { nickname });
     },
   };
 }
