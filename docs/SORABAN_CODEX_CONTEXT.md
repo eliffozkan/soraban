@@ -1,7 +1,7 @@
 # SORABAN — Project Context and Implementation Brief
-Version: 0.2 (21 November 2026)
+Version: 0.3 (22 November 2026; confirmed five-question MVP)
 Status: working specification for Codex and the project team
-Brand update: renamed GAUSS to SORABAN on 22 November 2026; rules remain v0.2.
+Brand update: renamed GAUSS to SORABAN on 22 November 2026.
 Specification path: `docs/SORABAN_CODEX_CONTEXT.md`. Original GDD attribution is
 retained below; the document rename changes no specification rules.
 Source: GAUSS Game Design Document v0.1 (13 November 2026) and reviewed feedback. Where this document differs from v0.1, **this document takes precedence**.
@@ -10,11 +10,12 @@ Source: GAUSS Game Design Document v0.1 (13 November 2026) and reviewed feedback
 SORABAN is a browser-based, mobile-first daily numerical estimation game about Middle East Technical University (ODTÜ/METU). It is for *anyone interested in ODTÜ*, not just enrolled students. It is inspired by the public gameplay patterns of the Turkish Fermi game (fermi.tr), but must have distinct original branding, layout, copy and question content. Do not copy third-party protected code, private APIs, designs, assets or question banks.
 
 ### Season and rules
-- Season 1: 30 consecutive days; 6 questions per day; **180 verified questions**, with a target of 20 backups. Content is researched separately and must not be fabricated.
-- Everyone gets the same six questions on a given day. One locked guess per player per question.
+- Season 1: 30 consecutive days; 5 questions per day; **150 verified questions**, with a target of 20 backups. Content is researched separately and must not be fabricated.
+- Everyone gets the same five questions on a given day. One locked guess per player per question. API totals derive from published positions; completion and score use nonvoid questions.
+- Public questions may have an optional category: `kampus`, `akademik`, `yurt-yemek`, `tarih-kultur`, `eymir-doga`, or `bilim-topluluklar`, matching Neris's category system.
 - Game day uses the server-derived date in the `Europe/Istanbul` timezone and turns over at 00:00 local time. Season start date is configurable, **not hard-coded without approval**.
 - A response reveals the actual value, score, short reasoning and source **only after that user's guess is securely committed**.
-- Daily score: arithmetic mean of six unrounded question scores, rounded only in the UI. A completed six-question day qualifies for a leaderboard entry. Partly played days remain saved but do not appear on the completed-day leaderboard.
+- Daily score: arithmetic mean of unrounded scores for all nonvoid questions, rounded only in the UI. A day is complete when all nonvoid questions have a committed guess. Partly played days remain saved but do not appear on the completed-day leaderboard. Voiding can make a previously incomplete player complete; block voiding the final nonvoid question.
 - Season ranking: sum of completed daily scores (missed days yield no points), with played-day count and average displayed separately. Streak does not add bonus points. Define deterministic tie breaking.
 - Archive: past questions may be read after their day, but cannot be retroactively played for points.
 - Results can be shared as spoiler-free text or an image. Small onboarding explains proportional scoring. Scope excludes friend lists, badges, challenges, notifications and admin panels in the MVP.
@@ -56,9 +57,9 @@ Numeric input must be usable on mobile and desktop and accessible to assistive t
 ## Delivery plan
 A. Reference analysis and validated rules, with edge-case checklist.
 B. Repository and technical skeleton, scoring module/tests and draft schema.
-C. One complete six-question vertical slice (dummy fixture data only) with persistence and proper reveal behavior.
+C. One complete five-question vertical slice (synthetic fixture data only) with persistence and proper reveal behavior.
 D. Visual design integration, verified accounts, leaderboard and spoiler-free sharing.
-E. Prepare all 180+20 sourced questions, run mobile, abuse, security and load tests; pilot with at least 30 people.
+E. Prepare all 150+20 sourced questions, run mobile, abuse, security and load tests; pilot with at least 30 people.
 F. Deploy, monitor traffic/errors and run the 30-day season. After day 30, show a final recap and an end-of-season screen; a second season is a later decision.
 
 ## Historical setup task — completed 21 November
@@ -79,5 +80,7 @@ Do not implement real Google OAuth, a production leaderboard, an admin dashboard
 Three parallel agent branches now develop backend, frontend and coded UI primitives.
 The earlier 'setup only' instructions above document the completed historical stage;
 active scope and ownership come from `docs/TEAM.md` and `docs/agents/`.
-No live migration/deployment is authorized by this phase change. The API contract is
-proposed, not implemented. New real question content must be verified and kept private.
+No live migration/deployment is authorized by this phase change. Milestone 1 supplied
+session/SSR foundations; Milestone 2 implements gameplay against unapplied SQL drafts.
+Database behavior remains unverified until approved disposable execution. Shared DTO
+updates are reviewed with Zeynep; new real content must be verified and kept private.

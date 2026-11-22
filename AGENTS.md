@@ -23,17 +23,18 @@
   or shell startup files for this project. Ask before installing machine-level runtimes.
 - Run `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` after changes.
   Report missing integrations and approvals accurately; do not claim RLS is tested
-  without isolated database tests. Auth refresh/proxy is deferred until auth is built.
+  without isolated database tests. Auth refresh/proxy is implemented; handlers still authorize independently.
 
 - Follow `CONTRIBUTING.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, and
   `docs/INTEGRATION_DECISIONS.md` for auth ownership, test/CI and product rules.
   Agent briefs: `docs/agents/BACKEND.md`, `docs/agents/FRONTEND.md`, `docs/agents/UIUX.md`.
   Claude also reads `CLAUDE.md`. All three agents work on distinct branches/owned files.
-- Do not claim proposed endpoints exist; only `/api/health` currently works.
+- Session and gameplay handlers exist; SQL remains unapplied. Distinguish mocked tests
+  from verified database behavior and return safe 503 errors until initialization.
 - Follow `CONTRIBUTING.md` and the ownership boundaries in `docs/TEAM.md`. The
   current stage is parallel feature work: backend, gameplay frontend and coded UI/UX.
-  The API document is a proposal, not implemented endpoints. Database execution
-  remains gated by explicit approval.
+  Shared DTO changes require affected-owner review. Database execution remains gated
+  by explicit approval.
 - Use SORABAN/soraban for active project names and `docs/SORABAN_CODEX_CONTEXT.md`
   for the specification. The unapplied draft uses `soraban_private`; keep that schema
   outside exposed API schemas. Renaming a draft never authorizes SQL execution.
