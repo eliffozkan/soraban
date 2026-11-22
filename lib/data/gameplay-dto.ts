@@ -3,6 +3,8 @@ import { CATEGORIES } from "../../components/ui/categories";
 import {
   type DailyProgress, type GameDay, type GuessResponse, type MyTodayResponse,
   type QuestionPublic, type RevealedGuess, type TodayResponse,
+  type Episode, type EpisodesResponse, type EpisodeResponse, type MyEpisodeResponse,
+  type Profile, type EpisodeRank, type EpisodeLeaderboard,
 } from "../game/contracts";
 import { DEFAULT_MAX_VALUE } from "../game/scoring";
 import { ApiFailure } from "./http";
@@ -74,14 +76,15 @@ function reveal(value: unknown): RevealedGuess {
 export function todayDto(value: unknown): TodayResponse {
   const row = object(value);
   const result = { day: day(row.day), questions: array(row.questions, question), progress: progress(row.progress) };
-  if (result.questions.length !== result.progress.totalCount
-    || result.questions.some((q, i) => q.position !== i + 1)
-    || new Set(result.questions.map(q => q.id)).size !== result.questions.length) return unavailable();
-  const valid = result.questions.filter(q => q.state !== "void");
-  const answered = valid.filter(q => q.state === "answered").length;
-  if (!valid.length || answered !== result.progress.answeredCount
-    || result.progress.completed !== (answered === valid.length)) return unavailable();
+  validatePublicState(result.questions, result.progress);
   return result;
+}
+function validatePublicState(questions: QuestionPublic[], state: DailyProgress) {
+  if (questions.length !== state.totalCount || questions.some((q, i) => q.position !== i + 1)
+    || new Set(questions.map(q => q.id)).size !== questions.length) return unavailable();
+  const valid = questions.filter(q => q.state !== "void");
+  const answered = valid.filter(q => q.state === "answered").length;
+  if (!valid.length || answered !== state.answeredCount || state.completed !== (answered === valid.length)) return unavailable();
 }
 export function myTodayDto(value: unknown): MyTodayResponse {
   const row = object(value);
@@ -90,4 +93,59 @@ export function myTodayDto(value: unknown): MyTodayResponse {
 export function guessDto(value: unknown): GuessResponse {
   const row = object(value);
   return { guess: reveal(row.guess), progress: progress(row.progress) };
+}
+
+function episode(value: unknown): Episode {
+  const row = object(value);
+  if (row.slug !== "demo" && row.slug !== "2026-11-22") return unavailable();
+  if (row.date !== (row.slug === "demo" ? null : "2026-11-22")) return unavailable();
+  return { id: text(row.id), slug: row.slug, title: text(row.title), date: row.date as string | null,
+    totalCount: integer(row.totalCount, 1) };
+}
+export function episodesDto(value: unknown): EpisodesResponse {
+  return { episodes: array(object(value).episodes, episode) };
+}
+export function episodeDto(value: unknown): EpisodeResponse {
+  const row = object(value);
+  const meta = episode(row.episode);
+  const questions = array(row.questions, question);
+  const state = progress(row.progress);
+  validatePublicState(questions, state);
+  if (state.totalCount !== meta.totalCount) return unavailable();
+  return { episode: meta, questions, progress: state };
+}
+export function myEpisodeDto(value: unknown): MyEpisodeResponse {
+  const row = object(value);
+  const meta = episode(row.episode);
+  const state = progress(row.progress);
+  const guesses = array(row.guesses, reveal);
+  if (state.totalCount !== meta.totalCount || guesses.length > meta.totalCount
+    || new Set(guesses.map(g => g.questionId)).size !== guesses.length) return unavailable();
+  return { episode: meta, guesses, progress: state };
+}
+export function profileDto(value: unknown): Profile {
+  const row = object(value);
+  if (typeof row.nicknameApproved !== "boolean" || typeof row.nicknameLocked !== "boolean"
+    || typeof row.leaderboardHidden !== "boolean") return unavailable();
+  const nickname = row.nickname === null ? null : text(row.nickname);
+  const displayName = text(row.displayName);
+  if ((row.nicknameApproved && (nickname === null || displayName !== nickname))
+    || (!row.nicknameApproved && displayName !== "Anonim oyuncu")) return unavailable();
+  return { nickname, displayName, nicknameApproved: row.nicknameApproved,
+    nicknameLocked: row.nicknameLocked, leaderboardHidden: row.leaderboardHidden };
+}
+function rank(value: unknown): EpisodeRank {
+  const row = object(value);
+  return { rank: integer(row.rank, 1), nickname: text(row.nickname), scoreRaw: number(row.scoreRaw, 0, 100) };
+}
+export function leaderboardDto(value: unknown): EpisodeLeaderboard {
+  const row = object(value);
+  if (row.status !== "ready") return unavailable();
+  const entries = array(row.entries, rank);
+  const limit = integer(row.limit, 1);
+  const offset = integer(row.offset, 0);
+  const totalPlayers = integer(row.totalPlayers, 0);
+  if (limit > 100 || offset > 10000 || entries.length > limit || entries.length > totalPlayers) return unavailable();
+  return { episode: episode(row.episode), status: "ready", entries,
+    me: row.me === null ? null : rank(row.me), totalPlayers, limit, offset };
 }

@@ -3,7 +3,9 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 import json
 import math
+import os
 from pathlib import Path
+from episode_checks import check_episodes
 import subprocess
 import time
 import uuid
@@ -17,6 +19,11 @@ parser.add_argument("--approved-disposable-execution", action="store_true",
 def main():
     if not parser.parse_args().approved_disposable_execution:
         parser.error("Separate human approval is required before running migrations, even locally.")
+    endpoint = None if os.environ.get("DOCKER_CONTEXT") else os.environ.get("DOCKER_HOST")
+    endpoint = endpoint or subprocess.check_output(
+        ["docker", "context", "inspect", "--format", "{{.Endpoints.docker.Host}}"], text=True).strip()
+    if not endpoint.startswith("unix://"):
+        raise SystemExit("Disposable tests require a local Docker Unix-socket endpoint.")
     container = "soraban-sql-test-" + uuid.uuid4().hex[:10]
 
     def sql(statement, *, expect_error=False):
@@ -61,7 +68,7 @@ def main():
         else:
             raise AssertionError("Disposable PostgreSQL did not become ready")
         for file in ["tests/bootstrap.sql", "drafts/0001_initial_schema.sql",
-                     "drafts/0002_gameplay.sql", "tests/fixtures.sql"]:
+                     "drafts/0002_gameplay.sql", "drafts/0003_episodes_profiles.sql", "tests/fixtures.sql"]:
             sql((ROOT / "supabase" / file).read_text())
 
         # Publication: exactly configured positions, answer coverage and schedule.
@@ -142,6 +149,7 @@ def main():
             sql(f"select soraban_private.void_question('{question(2, p)}','SYNTHETIC void');")
         sql(f"select soraban_private.void_question('{question(2, 4)}','SYNTHETIC last void');", expect_error=True)
         print("PASS: void recalculation, newly completed player and final-question protection")
+        check_episodes(sql, as_player)
     finally:
         subprocess.run(["docker", "stop", container], check=True, capture_output=True, text=True, timeout=30)
 

@@ -1,5 +1,54 @@
-# SORABAN — API contract v0.2 (five-question MVP)
+# SORABAN — API contract v0.3 (presentation episodes; legacy season API retained)
 Status: backend implemented; SQL unapplied and database integration unverified. Elif owns the confirmed MVP update; Zeynep reviews the client migration and Neris reviews category/display impact before merge. Frontend-owned files are unchanged in this backend PR.
+
+## Presentation MVP — additive contract for Zeynep
+
+Two independent published episodes: `demo` (`date: null`) and `2026-11-22`
+(`date: "2026-11-22"`). Each has five different questions. Both remain playable
+regardless of the calendar and do not belong to the 30-day season. An identity has
+one saved attempt per question; Demo is reusable for new audiences, not a reset of
+an existing player's scores. Reloads resume that identity's progress.
+
+| Endpoint | Session | Response |
+| --- | --- | --- |
+| `GET /api/episodes` | Optional | `{ episodes: Episode[] }`, published episodes only |
+| `GET /api/episodes/{slug}` | Required | `{ episode, questions: QuestionPublic[], progress }` |
+| `GET /api/me/episodes/{slug}` | Required | `{ episode, guesses: RevealedGuess[], progress }` |
+| `POST /api/guesses` | Required | Unchanged `{ questionId, guess }` → `{ guess, progress }`; the question determines its episode |
+| `GET /api/me/profile` | Required | `Profile`, private to the caller |
+| `POST /api/me/nickname` | Required, same Origin | `{ nickname: string }` → `Profile` |
+| `GET /api/episodes/{slug}/leaderboard?limit=50&offset=0` | Optional | `{ episode, status: "ready", entries, me, totalPlayers, limit, offset }` |
+
+```ts
+type Episode = { id: string; slug: "demo" | "2026-11-22"; title: string; date: string | null; totalCount: number };
+type Profile = { nickname: string | null; displayName: string; nicknameApproved: boolean;
+  nicknameLocked: boolean; leaderboardHidden: boolean };
+type EpisodeRank = { rank: number; nickname: string; scoreRaw: number };
+```
+
+Episode `id` is public content metadata, never a player ID. Rankings expose only
+`EpisodeRank` fields. `me` is the caller's entry even outside the current page,
+or null when incomplete, hidden or logged out. Complete anonymous players qualify
+for these presentation boards without Google linking. Same raw score shares rank
+(1,1,3); ordering is raw score descending, completion time ascending, then private
+player UUID. Pagination limit is 1–100, offset 0–10000. Scores and ranks never mix
+between episodes or with the future official season board.
+
+Nicknames use NFKC, trimmed/collapsed spaces, 2–24 ASCII/Turkish letters, digits,
+spaces, `_` or `-`, with a letter/digit first; controls/markup are rejected. SQL
+adds basic profanity/impersonation filtering. Changes are limited in the database
+to one per minute and five per hour per identity. Repeating the same normalized
+name is idempotent. Names start unapproved; public display is `Anonim oyuncu`
+until owner approval. Changes revoke name approval but never clear a hide/lock.
+Hidden players are absent from boards. Nicknames are not globally unique accounts.
+
+New safe errors: `400 INVALID_NICKNAME`, `400 INVALID_PAGINATION`,
+`403 NICKNAME_LOCKED`, `404 EPISODE_NOT_FOUND`, `429 RATE_LIMITED` (Retry-After: 60).
+Missing migrations/RPCs still return safe 503. All new responses remain no-store.
+The old calendar endpoints below remain season-only with unchanged envelopes.
+Zeynep owns the new adapter/selector/profile/leaderboard integration; no frontend
+types or files are edited by this backend change. Runtime verification and ten
+privately verified questions are required before calling either episode live.
 
 ## Rules
 - JSON camelCase; numeric guesses as finite positive JSON numbers, within the shared 1e15 maximum. The client presents locale-aware parsing confirmation before submission. The question fixes its physical unit.
