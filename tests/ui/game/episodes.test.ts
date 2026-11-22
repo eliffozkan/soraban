@@ -33,6 +33,21 @@ describe("mock episodes", () => {
     expect((await client.getMyEpisode("demo")).guesses).toHaveLength(5);
   });
 
+  it("scores each guess with the real formula and averages the episode", async () => {
+    const client = createMockClient();
+    await client.ensureGuestSession();
+    const { questions } = await client.getEpisode("demo");
+    expect(questions.map((q) => q.prompt)).not.toEqual((await client.getEpisode("2026-11-22")).questions.map((q) => q.prompt));
+    const exact = await client.submitGuess({ questionId: questions[0].id, guess: 38 });
+    expect(exact.guess.scoreRaw).toBe(100);
+    const off = await client.submitGuess({ questionId: questions[1].id, guess: 23 });
+    expect(off.guess.scoreRaw).toBeCloseTo(100 - 50 * Math.log10(2), 6);
+    let last;
+    for (const q of questions.slice(2)) last = await client.submitGuess({ questionId: q.id, guess: 1e9 });
+    const scores = (await client.getMyEpisode("demo")).guesses.map((g) => g.scoreRaw);
+    expect(last?.progress.scoreRaw).toBeCloseTo(scores.reduce((a, b) => a + b, 0) / 5, 9);
+  });
+
   it("leaderboard shows only this player's own completed result, never fake players", async () => {
     const client = createMockClient();
     await client.ensureGuestSession();
