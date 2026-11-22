@@ -1,7 +1,10 @@
 # Contributing to SORABAN
 
 Read [the specification](docs/GAUSS_CODEX_CONTEXT.md), [AGENTS.md](AGENTS.md) and
-[team ownership](docs/TEAM.md). Current scope is team preparation, not gameplay.
+[team ownership](docs/TEAM.md). Parallel feature development now follows the named three-agent roles in
+[TEAM.md](docs/TEAM.md) and proposed [API contract](docs/API_CONTRACT.md).
+Claude agents also read [CLAUDE.md](CLAUDE.md); each agent reads its assigned brief
+in `docs/agents/`. No Figma handoff is required.
 Use issues/PRs to assign one developer per task and agree changes across boundaries.
 
 ## Local setup
@@ -38,12 +41,13 @@ Do not use shared-project writes, auth changes, migrations or deployment as a te
 
 ## Branches, PRs and merging
 
-After an approved GitHub remote exists, start from an updated `main`:
+Each contributor clones the existing GitHub repository on their **own** computer,
+then starts from an updated `main`:
 
 ```sh
 git switch main
 git pull --ff-only origin main
-git switch -c chore/short-description
+git switch -c feat/your-owned-feature
 ```
 
 Use `feat/`, `fix/`, `docs/` or `chore/` branches. Keep commits focused; stage explicit
@@ -71,11 +75,12 @@ Bring the latest `main` into the feature branch before merge (a merge is fine; r
 only your own unshared commits). Resolve conflicts with the affected owner and re-run
 checks. A reviewer squash-merges the approved PR, then teammates pull `main` with
 `--ff-only`. Never push directly or force-push to `main` during normal team work.
-The first repository publication below is the one-time bootstrap exception.
+The initial repository publication has been completed. Follow branch/PR review for
+all further changes; do not run the old bootstrap push again.
 
-## Existing GitHub repository
+## Existing GitHub repository (already published)
 
-Use https://github.com/eliffozkan/soraban.git. The repository already exists; do not
+Use https://github.com/eliffozkan/soraban.git. The public repository already exists and has been pushed; do not
 create another repository or change its visibility/access permissions as part of setup.
 Do not reinitialize Git or rewrite existing commits. Use the existing authentication;
 `gh auth status` checks it without changing account configuration.
