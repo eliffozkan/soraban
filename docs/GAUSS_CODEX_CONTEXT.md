@@ -1,10 +1,12 @@
-# GAUSS — Project Context and Implementation Brief
+# SORABAN — Project Context and Implementation Brief
 Version: 0.2 (21 November 2026)
 Status: working specification for Codex and the project team
+Brand update: renamed GAUSS to SORABAN on 22 November 2026; rules remain v0.2.
+The historical filename and original GDD title are retained for existing references.
 Source: GAUSS Game Design Document v0.1 (13 November 2026) and reviewed feedback. Where this document differs from v0.1, **this document takes precedence**.
 
 ## Product
-GAUSS is a browser-based, mobile-first daily numerical estimation game about Middle East Technical University (ODTÜ/METU). It is for *anyone interested in ODTÜ*, not just enrolled students. It is inspired by the public gameplay patterns of the Turkish Fermi game (fermi.tr), but must have distinct original branding, layout, copy and question content. Do not copy third-party protected code, private APIs, designs, assets or question banks.
+SORABAN is a browser-based, mobile-first daily numerical estimation game about Middle East Technical University (ODTÜ/METU). It is for *anyone interested in ODTÜ*, not just enrolled students. It is inspired by the public gameplay patterns of the Turkish Fermi game (fermi.tr), but must have distinct original branding, layout, copy and question content. Do not copy third-party protected code, private APIs, designs, assets or question banks.
 
 ### Season and rules
 - Season 1: 30 consecutive days; 6 questions per day; **180 verified questions**, with a target of 20 backups. Content is researched separately and must not be fabricated.
@@ -23,7 +25,7 @@ For positive finite `answer` and `guess`:
 `ratio = max(guess / answer, answer / guess)`
 `score = max(0, 100 - 50 * log10(ratio))`
 
-Use raw floating point score for calculations and tie breaking; round only for UI display. Examples: exact 100, 2x ~84.95, 3x ~76.14, 10x 50, 30x ~26.14, 100x 0. This is GAUSS's proposed public formula, not a claim about Fermi's undisclosed internals. Reject NaN, Infinity, zero, negative inputs and values above the configured maximum (initial proposal 1e15). Questions whose meaningful correct answer is zero or negative are out of initial scope.
+Use raw floating point score for calculations and tie breaking; round only for UI display. Examples: exact 100, 2x ~84.95, 3x ~76.14, 10x 50, 30x ~26.14, 100x 0. This is SORABAN's proposed public formula, not a claim about Fermi's undisclosed internals. Reject NaN, Infinity, zero, negative inputs and values above the configured maximum (initial proposal 1e15). Questions whose meaningful correct answer is zero or negative are out of initial scope.
 
 ### Number entry
 Numeric input must be usable on mobile and desktop and accessible to assistive technologies. The question itself fixes the unit. If there are magnitude shortcuts (thousand, million, billion), they scale the number, **not** the physical unit. Avoid ambiguous Turkish vs English separators: display the *parsed value* in an explicit pre-submit confirmation (example: `1.500 → 1,500 / bin beş yüz`). No paste blocking; server-side validation is mandatory.
@@ -45,9 +47,10 @@ Numeric input must be usable on mobile and desktop and accessible to assistive t
 - Suggested logical data: game_days; public_questions; private_answers; player_profiles; guesses; daily_scores. Add only needed columns. Do not publish the answer table through public views or policies.
 
 ### Team and design responsibilities
-- Project owner: backend, data model, scoring, API and integration.
-- Collaborator: UI/UX layouts, styles, components, states and responsive behavior in Figma.
-- Frontend implementation and end-to-end testing are shared. Figma output is a design spec, not executable frontend code.
+- Three developer roles: frontend; backend/API; database/content. File boundaries,
+  review expectations and assignment procedure are in `docs/TEAM.md`.
+- Figma guides UI/UX, styles, components, states and responsive behavior. Figma
+  output is a design spec, not executable frontend code. Integration testing is shared.
 
 ## Delivery plan
 A. Reference analysis and validated rules, with edge-case checklist.

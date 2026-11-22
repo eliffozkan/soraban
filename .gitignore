@@ -40,3 +40,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local credentials and private key exports (never force-add)
+*.key
+*.p12
+*.pfx
+/.aws/
+/.secrets/
+/secrets/
+/credentials*.json
+/service-account*.json
+/supabase/.temp/
+/supabase/.branches/

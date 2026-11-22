@@ -1,7 +1,12 @@
-# GAUSS
+# SORABAN
 
 Daily numerical estimation about METU/ODTÜ for anyone interested in the university.
-The current deliverable is setup only. Read [the working specification](docs/GAUSS_CODEX_CONTEXT.md)
+The current deliverable is repository preparation for three developers; gameplay
+remains deferred. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR workflow,
+and [team ownership](docs/TEAM.md) for boundaries.
+
+SORABAN was renamed from GAUSS on 22 November 2026. Internal compatibility names
+are documented in [docs/TEAM.md](docs/TEAM.md#retained-internal-names). Read [the working specification](docs/GAUSS_CODEX_CONTEXT.md)
 first; version 0.2 overrides the earlier GDD.
 
 ## Local development
@@ -21,14 +26,15 @@ npm run dev
 If nvm is not loaded, source `~/.nvm/nvm.sh` first. If the pinned runtime is
 missing, installing it with `nvm install --skip-default-packages` writes to
 `~/.nvm` and requires machine-change approval in Codex. Keep the existing nvm
-default; do not run `nvm alias default` or change shell startup files for GAUSS.
+default; do not run `nvm alias default` or change shell startup files for SORABAN.
 `nvm use` selects Node in the current shell, not automatically when changing
-directories. Use a dedicated GAUSS terminal; close it or select the other project’s
+directories. Use a dedicated SORABAN terminal; close it or select the other project’s
 Node version when switching projects.
 
 Visit http://localhost:3000. No environment variables are needed for the placeholder
-pages or production build. For later Supabase integration, copy `.env.example` to
-`.env.local` and supply your project's URL and **publishable** key. Empty fields
+pages or production build. For Supabase integration, create a private `.env.local` from `.env.example`
+without overwriting an existing file, then supply the authorized project URL and
+**publishable** key through your local editor or hidden terminal input. Empty fields
 are intentional. `.env.local` is ignored; never commit credentials. Next.js bundles
 `NEXT_PUBLIC_*` values at build time, so rebuild after changing them.
 
@@ -47,7 +53,7 @@ docs/                    Specification and schema security review
 ```
 
 Available routes: `/`, `/play`, `/results`, `/leaderboard` are Turkish placeholders.
-`GET /api/health` returns `{"status":"ok","service":"gauss"}` without configuration,
+`GET /api/health` returns `{"status":"ok","service":"soraban"}` without configuration,
 authentication or database access. It reports application liveness, not database
 readiness. Gameplay, guess APIs, accounts, ranking and sharing are deferred.
 System fonts keep builds independent of font downloads; final branding, styles,
@@ -113,7 +119,7 @@ the four page routes and `/api/health`. Build generates Next.js route types for
   test role isolation before gameplay. See the security test checklist in the review.
 - Approve the season start and numeric maximum; decide deterministic daily/season
   tie breaking and behavior when every question in a day is voided.
-- Supply authorized Supabase configuration when integration starts. Enable anonymous
+- Each developer supplies authorized local Supabase configuration when needed. Enable anonymous
   Auth and implement session refresh, then identity linking/conflict handling later.
 - Next deliverable is a six-question vertical slice with explicitly dummy fixtures,
   atomic persistence and safe reveal. No real question content is supplied here.

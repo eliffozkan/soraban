@@ -1,4 +1,4 @@
-# GAUSS project instructions
+# SORABAN project instructions
 
 - Read `docs/GAUSS_CODEX_CONTEXT.md` completely first. It supersedes the older GDD.
 - Setup scope only until requested otherwise. No fabricated questions, credentials,
@@ -22,6 +22,11 @@
 - Run `npm test`, `npm run lint`, `npm run typecheck`, `npm run build` after changes.
   Report missing integrations and approvals accurately; do not claim RLS is tested
   without isolated database tests. Auth refresh/proxy is deferred until auth is built.
+
+- Follow `CONTRIBUTING.md` and the ownership boundaries in `docs/TEAM.md`. The
+  current scope is team preparation; gameplay and database execution remain deferred.
+- SORABAN is the public name. Preserve legacy SQL identifiers, migration filenames
+  and the context filename unless an explicit compatibility change is requested.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
