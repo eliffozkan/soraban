@@ -58,8 +58,9 @@ Available routes: `/`, `/play`, `/results`, `/leaderboard` are Turkish placehold
 `GET /api/health` returns `{"status":"ok","service":"soraban"}` without configuration,
 authentication or database access. It reports application liveness, not database
 readiness. Gameplay, guess APIs, accounts, ranking and sharing are deferred.
-System fonts keep builds independent of font downloads; final branding, styles,
-components and interaction states will be implemented by Neris in React/Tailwind.
+The design system (tokens, self-hosted Archivo font, UI primitives in
+`components/ui`) is documented in [docs/design/README.md](docs/design/README.md)
+and [docs/design/components.md](docs/design/components.md).
 
 ## Scoring
 
