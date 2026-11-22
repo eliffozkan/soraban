@@ -25,6 +25,10 @@ describe("buildShareText", () => {
     expect(text).toBe("SORABAN #07 · 73,5/100\n🟩🟦⬜🟨🟥⬛");
   });
 
+  it("bölüm adı verilirse numara yerine onu yazar", () => {
+    expect(buildShareText({ dayNumber: 0, label: "Demo", dailyScoreRaw: 50, marks: ["high"] })).toBe("SORABAN Demo · 50,0/100\n🟩");
+  });
+
   it("puan yoksa tire gösterir", () => {
     expect(buildShareText({ dayNumber: 12, dailyScoreRaw: null, marks: [] })).toBe("SORABAN #12 · —/100\n");
   });

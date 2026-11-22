@@ -1,5 +1,10 @@
 import type {
+  EpisodeLeaderboardResponse,
+  EpisodeResponse,
+  EpisodeSlug,
   GuestSession,
+  MyEpisodeResponse,
+  NicknameResponse,
   LeaderboardResponse,
   LeaderboardScope,
   MyTodayResponse,
@@ -28,6 +33,18 @@ export interface SorabanClient {
   submitGuess(request: SubmitGuessRequest): Promise<SubmitGuessResponse>;
   /** GET /api/me/today — oyuncunun bugünkü kendi sonuçları. */
   getMyToday(): Promise<MyTodayResponse>;
-  /** GET /api/leaderboard?scope=... */
+  /** GET /api/leaderboard?scope=... — 30 günlük sezon için (şimdilik kullanılmıyor). */
   getLeaderboard(scope: LeaderboardScope): Promise<LeaderboardResponse>;
+
+  // --- Bölümler (PROPOSAL, Elif ile netleşecek) ---
+  /** GET /api/episodes/{slug} — bölümün herkese açık soruları + bu oyuncunun ilerlemesi. */
+  getEpisode(slug: EpisodeSlug): Promise<EpisodeResponse>;
+  /** GET /api/episodes/{slug}/me — bu oyuncunun o bölümdeki kilitli tahminleri. */
+  getMyEpisode(slug: EpisodeSlug): Promise<MyEpisodeResponse>;
+  /** GET /api/episodes/{slug}/leaderboard — yalnızca o bölümü tamamlayanlar. */
+  getEpisodeLeaderboard(slug: EpisodeSlug): Promise<EpisodeLeaderboardResponse>;
+  /** GET /api/me/nickname */
+  getNickname(): Promise<NicknameResponse>;
+  /** POST /api/me/nickname — sunucu doğrular, uygunsuzsa NICKNAME_REJECTED. */
+  setNickname(nickname: string): Promise<NicknameResponse>;
 }
