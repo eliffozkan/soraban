@@ -12,7 +12,8 @@ create index daily_scores_ranking_idx on public.daily_scores(game_day_id, score 
 
 create function soraban_private.episode_json(p_day uuid) returns jsonb
 language sql stable set search_path = '' as $$
-  select jsonb_build_object('id', d.id, 'slug', d.episode_key, 'title', d.episode_title,
+  select jsonb_build_object('id', d.id, 'slug', d.episode_key,
+    'kind', case when d.episode_key = 'demo' then 'demo' else 'dated' end, 'title', d.episode_title,
     'date', d.play_date, 'totalCount', soraban_private.questions_per_day())
   from public.game_days d where d.id = p_day and d.episode_key is not null
 $$;
@@ -54,13 +55,13 @@ create function soraban_private.normalize_nickname(p_name text) returns text
 language plpgsql immutable set search_path = '' as $$
 declare v_name text;
 begin
-  if p_name is null or octet_length(p_name) > 256 or p_name ~ '[[:cntrl:]]' then
-    raise sqlstate 'PT400' using message = 'INVALID_NICKNAME';
+  if p_name is null or octet_length(p_name) > 256 then
+    raise sqlstate 'PT400' using message = 'NICKNAME_INVALID';
   end if;
-  v_name := trim(regexp_replace(normalize(p_name, NFKC), ' +', ' ', 'g'));
-  if char_length(v_name) not between 2 and 24
-    or v_name collate "C" !~ '^[A-Za-zÇĞİÖŞÜçğıöşü0-9][A-Za-zÇĞİÖŞÜçğıöşü0-9 _-]+$' then
-    raise sqlstate 'PT400' using message = 'INVALID_NICKNAME';
+  v_name := trim(regexp_replace(normalize(p_name, NFC), '[[:space:]]+', ' ', 'g'));
+  if char_length(v_name) not between 3 and 20 or v_name !~ '^[[:alnum:] _.-]+$'
+    or v_name !~ '[[:alpha:]]' or v_name ~ '[[:cntrl:]]' then
+    raise sqlstate 'PT400' using message = 'NICKNAME_INVALID';
   end if;
   return v_name;
 end;
@@ -68,7 +69,7 @@ $$;
 
 create function soraban_private.nickname_blocked(p_name text) returns boolean
 language sql immutable set search_path = '' as $$
-  select translate(regexp_replace(lower(translate(p_name, 'ÇĞİÖŞÜçğıöşü', 'CGIOSUcgiosu')),
+  select translate(regexp_replace(lower(translate(normalize(p_name, NFKC), 'ÇĞİÖŞÜçğıöşü', 'CGIOSUcgiosu')),
     '[^a-z0-9]', '', 'g'), '013457', 'oieast')
     ~ '(fuck|shit|siktir|orospu|yarrak|amk|admin|moderator|soraban)'
 $$;
@@ -100,12 +101,12 @@ declare
   v_now timestamptz;
 begin
   if soraban_private.nickname_blocked(v_name) then
-    raise sqlstate 'PT400' using message = 'INVALID_NICKNAME';
+    raise sqlstate 'PT422' using message = 'NICKNAME_REJECTED';
   end if;
   insert into public.player_profiles(player_id) values(v_player) on conflict do nothing;
   select * into v_profile from public.player_profiles where player_id = v_player for update;
   v_now := clock_timestamp();
-  if v_profile.nickname_locked then raise sqlstate 'PT403' using message = 'NICKNAME_LOCKED'; end if;
+  if v_profile.nickname_locked then raise sqlstate 'PT422' using message = 'NICKNAME_REJECTED'; end if;
   if v_profile.nickname = v_name then return soraban_private.profile_json(v_player); end if;
   if v_profile.nickname_changed_at > v_now - interval '60 seconds'
     or (v_profile.nickname_window_start > v_now - interval '1 hour' and v_profile.nickname_changes >= 5) then
@@ -162,13 +163,14 @@ begin
     from public.daily_scores s join public.player_profiles p on p.player_id = s.player_id
     where s.game_day_id = v_day.id and not p.leaderboard_hidden
   ), safe as (
-    select player_id, ordinal, jsonb_build_object('rank', rank, 'nickname', nickname, 'scoreRaw', score) as entry from ranked
+    select player_id, ordinal, jsonb_build_object('rank', rank, 'nickname', nickname, 'scoreRaw', score,
+      'isMe', coalesce(player_id = v_player, false)) as entry from ranked
   )
   select jsonb_build_object('episode', soraban_private.episode_json(v_day.id), 'status', 'ready',
     'entries', coalesce((select jsonb_agg(entry order by ordinal) from safe
       where ordinal > p_offset and ordinal <= p_offset + p_limit), '[]'::jsonb),
-    'me', (select entry from safe where player_id = v_player),
-    'totalPlayers', (select count(*) from safe), 'limit', p_limit, 'offset', p_offset)
+    'me', (select jsonb_build_object('rank', entry->'rank', 'scoreRaw', entry->'scoreRaw') from safe where player_id = v_player),
+    'playerCount', (select count(*) from safe), 'limit', p_limit, 'offset', p_offset)
   into v_result;
   return v_result;
 end;

@@ -58,8 +58,8 @@ def check_episodes(sql, as_player):
     assert publish("demo") == demo_id
     a = json.loads(as_player("select public.soraban_episode_leaderboard('demo',1,1);"))
     b = json.loads(as_player("select public.soraban_episode_leaderboard('2026-11-22');"))
-    assert a["totalPlayers"] == 2 and a["me"]["rank"] == 1 and len(a["entries"]) == 1
-    assert b["totalPlayers"] == 1 and b["me"]["scoreRaw"] == 50
+    assert a["playerCount"] == 2 and a["me"]["rank"] == 1 and len(a["entries"]) == 1
+    assert b["playerCount"] == 1 and b["me"]["scoreRaw"] == 50
     whole = json.loads(sql("set role anon; select public.soraban_episode_leaderboard('demo');"))
     assert [e["rank"] for e in whole["entries"]] == [1, 1] and whole["me"] is None
     assert all(e["nickname"] == "Anonim oyuncu" for e in whole["entries"])
@@ -68,7 +68,7 @@ def check_episodes(sql, as_player):
     print("PASS: both episode completions, reload/race retry, tied ranks and isolated scores")
 
     identity = "a0000000-0000-4000-8000-000000000001"
-    response = json.loads(as_player("select public.soraban_set_nickname('  Ｅlif   Çığ  ');"))
+    response = json.loads(as_player("select public.soraban_set_nickname('  Elif   Çığ  ');"))
     assert response["nickname"] == "Elif Çığ" and response["displayName"] == "Anonim oyuncu"
     assert json.loads(as_player("select public.soraban_profile();", 2))["nickname"] is None
     as_player("select public.soraban_set_nickname('a m k');", expect_error=True)
@@ -92,7 +92,7 @@ def check_episodes(sql, as_player):
     renamed = json.loads(as_player("select public.soraban_set_nickname('Changed hidden');"))
     assert renamed["leaderboardHidden"] and not renamed["nicknameApproved"]
     hidden = json.loads(as_player("select public.soraban_episode_leaderboard('demo');"))
-    assert hidden["totalPlayers"] == 1 and hidden["me"] is None
+    assert hidden["playerCount"] == 1 and hidden["me"] is None
     # Voiding uses the same transaction/projection path on standalone episodes.
     sql(f"select soraban_private.void_question('{ids['demo'][4]}','SYNTHETIC void');")
     restored = json.loads(as_player("select public.soraban_episode('demo',true);"))

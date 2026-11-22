@@ -56,7 +56,7 @@ create table soraban_private.private_answers (
 
 create table public.player_profiles (
   player_id uuid primary key references auth.users(id) on delete cascade,
-  nickname text check (nickname = trim(nickname) and char_length(nickname) between 2 and 24),
+  nickname text check (nickname = trim(nickname) and char_length(nickname) between 3 and 20),
   nickname_approved boolean not null default false,
   check (not nickname_approved or nickname is not null)
 );

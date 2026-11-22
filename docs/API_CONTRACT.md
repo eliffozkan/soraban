@@ -13,41 +13,44 @@ an existing player's scores. Reloads resume that identity's progress.
 | --- | --- | --- |
 | `GET /api/episodes` | Optional | `{ episodes: Episode[] }`, published episodes only |
 | `GET /api/episodes/{slug}` | Required | `{ episode, questions: QuestionPublic[], progress }` |
-| `GET /api/me/episodes/{slug}` | Required | `{ episode, guesses: RevealedGuess[], progress }` |
+| `GET /api/episodes/{slug}/me` | Required | `{ episode, guesses: RevealedGuess[], progress }` |
 | `POST /api/guesses` | Required | Unchanged `{ questionId, guess }` → `{ guess, progress }`; the question determines its episode |
 | `GET /api/me/profile` | Required | `Profile`, private to the caller |
+| `GET /api/me/nickname` | Required | Same private profile, compatible with the adapter's `{ nickname }` subset |
 | `POST /api/me/nickname` | Required, same Origin | `{ nickname: string }` → `Profile` |
-| `GET /api/episodes/{slug}/leaderboard?limit=50&offset=0` | Optional | `{ episode, status: "ready", entries, me, totalPlayers, limit, offset }` |
+| `GET /api/episodes/{slug}/leaderboard?limit=50&offset=0` | Optional | `{ episode, status: "ready", entries, me, playerCount, limit, offset }` |
 
 ```ts
-type Episode = { id: string; slug: "demo" | "2026-11-22"; title: string; date: string | null; totalCount: number };
+type Episode = { id: string; slug: "demo" | "2026-11-22"; kind: "demo" | "dated"; title: string; date: string | null; totalCount: number };
 type Profile = { nickname: string | null; displayName: string; nicknameApproved: boolean;
   nicknameLocked: boolean; leaderboardHidden: boolean };
-type EpisodeRank = { rank: number; nickname: string; scoreRaw: number };
+type EpisodeRank = { rank: number; nickname: string; scoreRaw: number; isMe: boolean };
 ```
 
 Episode `id` is public content metadata, never a player ID. Rankings expose only
-`EpisodeRank` fields. `me` is the caller's entry even outside the current page,
+`EpisodeRank` fields. `me` is `{ rank, scoreRaw }` for the caller even outside the current page,
 or null when incomplete, hidden or logged out. Complete anonymous players qualify
 for these presentation boards without Google linking. Same raw score shares rank
 (1,1,3); ordering is raw score descending, completion time ascending, then private
 player UUID. Pagination limit is 1–100, offset 0–10000. Scores and ranks never mix
 between episodes or with the future official season board.
 
-Nicknames use NFKC, trimmed/collapsed spaces, 2–24 ASCII/Turkish letters, digits,
-spaces, `_` or `-`, with a letter/digit first; controls/markup are rejected. SQL
+Nicknames follow PR #12: NFC, trimmed/collapsed whitespace, 3–20 Unicode letters/digits,
+spaces, `_`, `-` or `.`, including at least one letter. Remaining controls/markup are rejected. SQL
 adds basic profanity/impersonation filtering. Changes are limited in the database
 to one per minute and five per hour per identity. Repeating the same normalized
 name is idempotent. Names start unapproved; public display is `Anonim oyuncu`
 until owner approval. Changes revoke name approval but never clear a hide/lock.
 Hidden players are absent from boards. Nicknames are not globally unique accounts.
 
-New safe errors: `400 INVALID_NICKNAME`, `400 INVALID_PAGINATION`,
-`403 NICKNAME_LOCKED`, `404 EPISODE_NOT_FOUND`, `429 RATE_LIMITED` (Retry-After: 60).
+New safe errors match the adapter: `400 NICKNAME_INVALID`, `422 NICKNAME_REJECTED`
+(including moderator-locked changes), `400 INVALID_PAGINATION`,
+`404 EPISODE_NOT_FOUND`, `429 RATE_LIMITED` (Retry-After: 60).
 Missing migrations/RPCs still return safe 503. All new responses remain no-store.
 The old calendar endpoints below remain season-only with unchanged envelopes.
-Zeynep owns the new adapter/selector/profile/leaderboard integration; no frontend
-types or files are edited by this backend change. Runtime verification and ten
+PR #12's merged adapter/selector is preserved; backend routes and DTOs match its
+proposal, with an adapter-to-handler test. `/api/me/episodes/{slug}` also remains
+an alias. No frontend types/files are edited here. Runtime verification and ten
 privately verified questions are required before calling either episode live.
 
 ## Rules

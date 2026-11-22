@@ -98,8 +98,9 @@ export function guessDto(value: unknown): GuessResponse {
 function episode(value: unknown): Episode {
   const row = object(value);
   if (row.slug !== "demo" && row.slug !== "2026-11-22") return unavailable();
+  if (row.kind !== (row.slug === "demo" ? "demo" : "dated")) return unavailable();
   if (row.date !== (row.slug === "demo" ? null : "2026-11-22")) return unavailable();
-  return { id: text(row.id), slug: row.slug, title: text(row.title), date: row.date as string | null,
+  return { id: text(row.id), slug: row.slug, kind: row.kind as Episode["kind"], title: text(row.title), date: row.date as string | null,
     totalCount: integer(row.totalCount, 1) };
 }
 export function episodesDto(value: unknown): EpisodesResponse {
@@ -136,7 +137,8 @@ export function profileDto(value: unknown): Profile {
 }
 function rank(value: unknown): EpisodeRank {
   const row = object(value);
-  return { rank: integer(row.rank, 1), nickname: text(row.nickname), scoreRaw: number(row.scoreRaw, 0, 100) };
+  if (typeof row.isMe !== "boolean") return unavailable();
+  return { rank: integer(row.rank, 1), nickname: text(row.nickname), scoreRaw: number(row.scoreRaw, 0, 100), isMe: row.isMe };
 }
 export function leaderboardDto(value: unknown): EpisodeLeaderboard {
   const row = object(value);
@@ -144,8 +146,9 @@ export function leaderboardDto(value: unknown): EpisodeLeaderboard {
   const entries = array(row.entries, rank);
   const limit = integer(row.limit, 1);
   const offset = integer(row.offset, 0);
-  const totalPlayers = integer(row.totalPlayers, 0);
-  if (limit > 100 || offset > 10000 || entries.length > limit || entries.length > totalPlayers) return unavailable();
+  const playerCount = integer(row.playerCount, 0);
+  if (limit > 100 || offset > 10000 || entries.length > limit || entries.length > playerCount) return unavailable();
+  const own = row.me === null ? null : object(row.me);
   return { episode: episode(row.episode), status: "ready", entries,
-    me: row.me === null ? null : rank(row.me), totalPlayers, limit, offset };
+    me: own === null ? null : { rank: integer(own.rank, 1), scoreRaw: number(own.scoreRaw, 0, 100) }, playerCount, limit, offset };
 }

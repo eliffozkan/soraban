@@ -23,7 +23,7 @@ export function getProfile(client: SupabaseClient) {
   return gameplayRpc(client, "soraban_profile", {}, profileDto);
 }
 export async function setNickname(client: SupabaseClient, request: Request) {
-  const invalid = () => new ApiFailure(400, "INVALID_NICKNAME", "Provide one valid nickname of 2–24 characters.");
+  const invalid = () => new ApiFailure(400, "NICKNAME_INVALID", "Provide one valid nickname of 3–20 characters, including a letter.");
   const body = await readJsonBody(request, 512, invalid);
   if (!body || typeof body !== "object" || Array.isArray(body) || Object.keys(body).length !== 1
     || !Object.hasOwn(body, "nickname")) throw invalid();

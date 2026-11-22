@@ -6,10 +6,10 @@ import { ApiFailure } from "./http";
 
 const failures: Record<string, { status: number; message: string }> = {
   INVALID_GUESS: { status: 400, message: "Provide a valid question ID and positive number within the allowed maximum." },
-  INVALID_NICKNAME: { status: 400, message: "Use 2–24 letters, numbers, spaces, underscores or hyphens; this nickname is not allowed." },
+  NICKNAME_INVALID: { status: 400, message: "Use 3–20 letters, numbers, spaces, underscores, dots or hyphens, including a letter." },
   INVALID_PAGINATION: { status: 400, message: "Invalid leaderboard pagination." },
   AUTH_REQUIRED: { status: 401, message: "A valid session is required." },
-  NICKNAME_LOCKED: { status: 403, message: "Nickname changes are currently disabled." },
+  NICKNAME_REJECTED: { status: 422, message: "This nickname cannot be used." },
   QUESTION_NOT_FOUND: { status: 404, message: "Question not found." },
   EPISODE_NOT_FOUND: { status: 404, message: "Episode not found." },
   DAY_CLOSED: { status: 409, message: "This question is no longer accepting guesses." },
