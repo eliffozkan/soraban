@@ -47,10 +47,10 @@ Numeric input must be usable on mobile and desktop and accessible to assistive t
 - Suggested logical data: game_days; public_questions; private_answers; player_profiles; guesses; daily_scores. Add only needed columns. Do not publish the answer table through public views or policies.
 
 ### Team and design responsibilities
-- Three developer roles: frontend; backend/API; database/content. File boundaries,
-  review expectations and assignment procedure are in `docs/TEAM.md`.
-- Figma guides UI/UX, styles, components, states and responsive behavior. Figma
-  output is a design spec, not executable frontend code. Integration testing is shared.
+- The named roles are Elif (Codex/backend), Zeynep (Claude/frontend), Neris
+  (Claude/UI/UX implemented directly in React/Tailwind). No Figma handoff.
+- File ownership, agent briefs, API proposal, PR review and integration order
+  are defined in `docs/TEAM.md`, `docs/agents/` and `docs/API_CONTRACT.md`.
 
 ## Delivery plan
 A. Reference analysis and validated rules, with edge-case checklist.
@@ -60,7 +60,7 @@ D. Visual design integration, verified accounts, leaderboard and spoiler-free sh
 E. Prepare all 180+20 sourced questions, run mobile, abuse, security and load tests; pilot with at least 30 people.
 F. Deploy, monitor traffic/errors and run the 30-day season. After day 30, show a final recap and an end-of-season screen; a second season is a later decision.
 
-## Current task — setup only (21 November)
+## Historical setup task — completed 21 November
 The local project already exists at `~/gauss`, created with `npx create-next-app@latest gauss --yes`, with Next.js 16, TypeScript and Tailwind. **Do not reinitialize it.**
 1. Inspect project configuration, present a concise implementation plan and check dependencies and scripts.
 2. Prepare a clean directory structure for components, game logic, API, data access and tests. Keep UI placeholder minimal so Figma can guide the final design.
@@ -71,5 +71,12 @@ The local project already exists at `~/gauss`, created with `npx create-next-app
 7. Add a short root `AGENTS.md` with stable architecture/security rules and a practical README.
 8. Run lint, tests and production build. Report the commands and outcomes, files changed, unresolved decisions and manual steps.
 
-## Explicitly not part of today's setup
+## Historical restrictions from original setup
 Do not implement real Google OAuth, a production leaderboard, an admin dashboard, upload the 180 question set, deploy with guessed credentials or modify GitHub/Vercel/Supabase accounts without authorization. Before changing any live environment or spending money, ask for approval. Prioritize reliable working foundations over breadth.
+
+## Active team phase (22 November 2026)
+Three parallel agent branches now develop backend, frontend and coded UI primitives.
+The earlier 'setup only' instructions above document the completed historical stage;
+active scope and ownership come from `docs/TEAM.md` and `docs/agents/`.
+No live migration/deployment is authorized by this phase change. The API contract is
+proposed, not implemented. New real question content must be verified and kept private.

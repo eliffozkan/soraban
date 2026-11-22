@@ -1,9 +1,10 @@
 # SORABAN
 
 Daily numerical estimation about METU/ODTÜ for anyone interested in the university.
-The current deliverable is repository preparation for three developers; gameplay
-remains deferred. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR workflow,
-and [team ownership](docs/TEAM.md) for boundaries.
+The starter has been published and three developers now work on separate feature
+branches. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup/PR workflow,
+[team ownership](docs/TEAM.md), and the [proposed API contract](docs/API_CONTRACT.md).
+Neris implements React/Tailwind UI directly (no Figma handoff).
 
 SORABAN was renamed from GAUSS on 22 November 2026. Internal compatibility names
 are documented in [docs/TEAM.md](docs/TEAM.md#retained-internal-names). Read [the working specification](docs/GAUSS_CODEX_CONTEXT.md)
@@ -43,7 +44,7 @@ are intentional. `.env.local` is ignored; never commit credentials. Next.js bund
 ```text
 app/                     App Router pages and thin API Route Handlers
   api/health/route.ts     Public liveness endpoint
-components/              Reusable presentation; minimal pending Figma
+components/              Shared UI primitives (Neris) and game UI (Zeynep)
 lib/game/                Pure game logic, independent of React and Supabase
 lib/supabase/            Browser and request-scoped server client factories
 lib/data/                Reserved server-only repository boundary
@@ -57,7 +58,7 @@ Available routes: `/`, `/play`, `/results`, `/leaderboard` are Turkish placehold
 authentication or database access. It reports application liveness, not database
 readiness. Gameplay, guess APIs, accounts, ranking and sharing are deferred.
 System fonts keep builds independent of font downloads; final branding, styles,
-components and interaction states will follow Figma.
+components and interaction states will be implemented by Neris in React/Tailwind.
 
 ## Scoring
 

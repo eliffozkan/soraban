@@ -1,13 +1,15 @@
 # SORABAN project instructions
 
 - Read `docs/GAUSS_CODEX_CONTEXT.md` completely first. It supersedes the older GDD.
-- Setup scope only until requested otherwise. No fabricated questions, credentials,
-  hard-coded season start, live account changes, deployment or spending.
+- Work in the explicitly assigned feature scope and branch. Never fabricate questions,
+  credentials, or a season start. No live account changes, migration execution,
+  deployment, or spending without explicit approval.
 - Explicit human approval is required before executing any migration or secret /
   production write operation. SQL in `supabase/drafts` is review material only.
 - Keep App Router pages and Route Handlers thin; reusable UI in `components`, pure
   rules in `lib/game`, server-only repositories in `lib/data`, clients in `lib/supabase`.
-  Keep presentation independent so Figma can guide the eventual frontend.
+  Keep presentation separate from state/data. Neris supplies coded visual primitives
+  in components/ui; Zeynep owns game screens and their interactions.
 - Server-derived Europe/Istanbul date governs the day. One atomic locked guess per
   player/question; reveal answer/reason/source only after commit. Authorize server-side.
 - Private answers require database-level separation and no public policies/views.
@@ -23,8 +25,14 @@
   Report missing integrations and approvals accurately; do not claim RLS is tested
   without isolated database tests. Auth refresh/proxy is deferred until auth is built.
 
+- Follow `CONTRIBUTING.md`, `docs/TEAM.md`, and `docs/API_CONTRACT.md`.
+  Agent briefs: `docs/agents/BACKEND.md`, `docs/agents/FRONTEND.md`, `docs/agents/UIUX.md`.
+  Claude also reads `CLAUDE.md`. All three agents work on distinct branches/owned files.
+- Do not claim proposed endpoints exist; only `/api/health` currently works.
 - Follow `CONTRIBUTING.md` and the ownership boundaries in `docs/TEAM.md`. The
-  current scope is team preparation; gameplay and database execution remain deferred.
+  current stage is parallel feature work: backend, gameplay frontend and coded UI/UX.
+  The API document is a proposal, not implemented endpoints. Database execution
+  remains gated by explicit approval.
 - SORABAN is the public name. Preserve legacy SQL identifiers, migration filenames
   and the context filename unless an explicit compatibility change is requested.
 
