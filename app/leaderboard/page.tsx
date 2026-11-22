@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
+import { EpisodeRoute } from "@/components/game/episode-route";
 import { GameMain } from "@/components/game/game-main";
-import { LeaderboardScreen } from "@/components/game/leaderboard-screen";
 
 export const metadata: Metadata = { title: "Sıralama" };
 
-export default function Page() {
+export default function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   return (
     <GameMain title="Sıralama">
-      <LeaderboardScreen />
+      <EpisodeRoute searchParams={searchParams} screen="leaderboard" />
     </GameMain>
   );
 }

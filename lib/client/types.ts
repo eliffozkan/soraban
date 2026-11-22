@@ -115,6 +115,69 @@ export type LeaderboardResponse =
   | { scope: LeaderboardScope; status: "unavailable" }
   | { scope: LeaderboardScope; status: "ready"; entries: LeaderboardEntry[] };
 
+// ---------------------------------------------------------------------------
+// Bölümler (episodes) — PROPOSAL, Elif ile netleştirilecek (22 Kasım 2026).
+// İki bağımsız bölüm: "demo" (takvimden bağımsız) ve "2026-11-22" (tarihli ODTÜ
+// bölümü). İlerleme, puan ve sıralama bölümler arasında ASLA karışmaz.
+// ---------------------------------------------------------------------------
+
+export type EpisodeKind = "demo" | "dated";
+
+/** Bölüm kimliği (URL'de `?bolum=` değeri). */
+export type EpisodeSlug = "demo" | "2026-11-22";
+
+export type Episode = {
+  slug: EpisodeSlug;
+  kind: EpisodeKind;
+  /** Ekranda görünen ad, örn. "Demo" veya "22 Kasım". */
+  title: string;
+  /** Tarihli bölüm için YYYY-MM-DD; demo için null. */
+  date: string | null;
+};
+
+/** GET /api/episodes/{slug} — PROPOSAL. Cevap/açıklama/kaynak YOK. */
+export type EpisodeResponse = {
+  episode: Episode;
+  questions: QuestionPublic[];
+  progress: DailyProgress;
+};
+
+/** GET /api/episodes/{slug}/me — PROPOSAL. Yalnızca bu oyuncunun kilitli tahminleri. */
+export type MyEpisodeResponse = {
+  episode: Episode;
+  guesses: RevealedGuess[];
+  progress: DailyProgress;
+};
+
+export type EpisodeLeaderboardEntry = {
+  rank: number;
+  /** Sunucunun onayladığı takma ad ya da sunucunun verdiği yedek ad. */
+  nickname: string;
+  scoreRaw: number;
+  /** Bu satır isteği yapan oyuncuya mı ait? (Kimlik göndermeden "sen" vurgusu.) */
+  isMe: boolean;
+};
+
+/**
+ * GET /api/episodes/{slug}/leaderboard — PROPOSAL.
+ * Yalnızca bölümü tamamlayan oyuncular. Eşit ham puan aynı sırayı paylaşır.
+ * Kullanıcı kimliği, token, e-posta YOK.
+ */
+export type EpisodeLeaderboardResponse = {
+  episode: Episode;
+  entries: EpisodeLeaderboardEntry[];
+  /** Tamamlayan oyuncu sayısı (liste kısaltılmış olabilir). */
+  playerCount: number;
+  /** Bu oyuncu bölümü tamamladıysa sırası; yoksa null. */
+  me: { rank: number; scoreRaw: number } | null;
+};
+
+/** GET /api/me/nickname ve POST /api/me/nickname yanıtı — PROPOSAL. */
+export type NicknameResponse = {
+  /** null: oyuncu takma ad seçmedi; sıralamada sunucunun yedek adı görünür. */
+  nickname: string | null;
+};
+
 /** Sözleşmedeki hata kodları + istemcinin kendi ürettiği kodlar. */
 export type ApiErrorCode =
   | "AUTH_REQUIRED" // 401
@@ -122,7 +185,10 @@ export type ApiErrorCode =
   | "QUESTION_NOT_FOUND" // 404
   | "ALREADY_SUBMITTED" // 409
   | "DAY_CLOSED" // 409
-  | "DAY_UNAVAILABLE" // 503
+  | "DAY_UNAVAILABLE" // 503 — bölüm/gün yayında değil
+  | "EPISODE_NOT_FOUND" // 404 — PROPOSAL: bilinmeyen bölüm
+  | "NICKNAME_INVALID" // 400 — PROPOSAL: uzunluk/karakter kuralı
+  | "NICKNAME_REJECTED" // 422 — PROPOSAL: uygunsuz takma ad
   | "RATE_LIMITED" // 429 — sunucuda AUTH_RATE_LIMITED olarak gelir
   | "SERVICE_UNAVAILABLE" // 503 — sunucunun AUTH_UNAVAILABLE / SERVICE_UNAVAILABLE kodları
   | "ORIGIN_FORBIDDEN" // 403 — istek aynı kökenden gelmedi (yapılandırma hatası)

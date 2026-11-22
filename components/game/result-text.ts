@@ -33,8 +33,10 @@ export function buildShareText(options: {
   dayNumber: number;
   dailyScoreRaw: number | null;
   marks: readonly ShareMark[];
+  /** Bölüm adı ("Demo", "22 Kasım"). Verilirse gün numarası yerine yazılır. */
+  label?: string;
 }): string {
-  const day = `#${String(options.dayNumber).padStart(2, "0")}`;
+  const day = options.label ?? `#${String(options.dayNumber).padStart(2, "0")}`;
   const score =
     options.dailyScoreRaw === null
       ? "—"

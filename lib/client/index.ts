@@ -21,10 +21,15 @@ export function resolveClientMode(value: string | undefined): ClientMode {
 
 let client: SorabanClient | null = null;
 
+/** Ekranlar mock modunda "ÖRNEK veri, gerçek sıralama değil" uyarısı göstermek için kullanır. */
+export function getClientMode(): ClientMode {
+  return resolveClientMode(process.env.NEXT_PUBLIC_SORABAN_CLIENT);
+}
+
 export function getSorabanClient(): SorabanClient {
   // Next.js NEXT_PUBLIC_ değerlerini derleme sırasında koda gömer; bu yüzden tam adıyla okunur.
   client ??=
-    resolveClientMode(process.env.NEXT_PUBLIC_SORABAN_CLIENT) === "http"
+    getClientMode() === "http"
       ? createHttpClient()
       : createMockClient({ latencyMs: 300 });
   return client;
@@ -35,3 +40,5 @@ export { SorabanClientError, isSorabanClientError } from "./errors";
 export { createHttpClient, type HttpClientOptions } from "./http-adapter";
 export { createMockClient, type MockClientOptions, type MockScenario } from "./mock-adapter";
 export * from "./types";
+export { EPISODES, episodeBySlug, isEpisodeSlug } from "./episodes";
+export * from "./nickname";

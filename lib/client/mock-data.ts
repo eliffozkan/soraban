@@ -92,3 +92,15 @@ export const MOCK_QUESTIONS: readonly MockQuestionFixture[] = [
     cannedScoreRaw: 26.1439372640,
   },
 ];
+
+/**
+ * Her bölüm için ayrı ÖRNEK soru kopyaları (farklı kimlikler). Böylece mock
+ * modunda da bir bölümün cevapları diğerini etkilemez.
+ */
+export function mockEpisodeQuestions(slug: string): MockQuestionFixture[] {
+  return MOCK_QUESTIONS.map((q) => ({
+    ...q,
+    id: `${slug}-${q.id}`,
+    prompt: q.prompt.replace("ÖRNEK SORU", `ÖRNEK (${slug}) SORU`),
+  }));
+}

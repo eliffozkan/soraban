@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -23,12 +23,14 @@ import {
   getSorabanClient,
   isSorabanClientError,
   type DailyProgress,
+  type EpisodeSlug,
   type QuestionPublic,
   type RevealedGuess,
 } from "@/lib/client";
 import { formatGuess, parseGuessInput, PARSE_ERROR_MESSAGES, readNumberTr } from "./number-input";
 import { ratioCaption } from "./result-text";
 import { ensureSessionOnce, errorMessage } from "./session";
+import { episodeHref } from "./use-episode";
 import { useLoad } from "./use-load";
 
 type PlayData = {
@@ -37,13 +39,13 @@ type PlayData = {
   progress: DailyProgress;
 };
 
-async function loadPlay(): Promise<PlayData> {
+async function loadPlay(slug: EpisodeSlug): Promise<PlayData> {
   await ensureSessionOnce();
   const client = getSorabanClient();
-  const [today, mine] = await Promise.all([client.getToday(), client.getMyToday()]);
+  const [episode, mine] = await Promise.all([client.getEpisode(slug), client.getMyEpisode(slug)]);
   const revealed: Record<string, RevealedGuess> = {};
   for (const guess of mine.guesses) revealed[guess.questionId] = guess;
-  return { questions: today.questions, revealed, progress: today.progress };
+  return { questions: episode.questions, revealed, progress: episode.progress };
 }
 
 const SHORTCUTS = [
@@ -52,9 +54,10 @@ const SHORTCUTS = [
   { label: "× milyar", value: "milyar" },
 ];
 
-/** Soru ekranı: yükleme durumları, ardından oyun. */
-export function PlayScreen() {
-  const { state, retry } = useLoad(loadPlay);
+/** Soru ekranı: yükleme durumları, ardından seçilen bölümün oyunu. */
+export function PlayScreen({ slug }: { slug: EpisodeSlug }) {
+  const load = useCallback(() => loadPlay(slug), [slug]);
+  const { state, retry } = useLoad(load);
 
   if (state.status === "loading") {
     return <StatusState kind="loading" title="Sorular yükleniyor…" />;
@@ -64,7 +67,7 @@ export function PlayScreen() {
       return (
         <StatusState
           kind="empty"
-          title="Bugünün soruları henüz yayında değil"
+          title="Bu bölümün soruları henüz yayında değil"
           message="Biraz sonra tekrar uğra."
           action={<Button variant="secondary" onClick={retry}>Tekrar kontrol et</Button>}
         />
@@ -72,7 +75,7 @@ export function PlayScreen() {
     }
     return <StatusState kind="error" title="Sorular yüklenemedi" message={errorMessage(state.error)} onRetry={retry} />;
   }
-  return <PlayGame initial={state.data} />;
+  return <PlayGame initial={state.data} slug={slug} onReload={retry} />;
 }
 
 type Phase = "input" | "confirm" | "submitting" | "revealed";
@@ -85,7 +88,7 @@ function firstOpenPosition(questions: QuestionPublic[], after = 0): number | nul
   return open.find((p) => p > after) ?? open[0] ?? null;
 }
 
-function PlayGame({ initial }: { initial: PlayData }) {
+function PlayGame({ initial, slug, onReload }: { initial: PlayData; slug: EpisodeSlug; onReload: () => void }) {
   const router = useRouter();
   const [questions, setQuestions] = useState(initial.questions);
   const [revealed, setRevealed] = useState(initial.revealed);
@@ -147,6 +150,12 @@ function PlayGame({ initial }: { initial: PlayData }) {
       setProgress(response.progress);
       setPhase("revealed");
     } catch (error) {
+      // Soru kapandıysa/iptal edildiyse ekrandaki durum eskimiştir: sunucudan yeniden yükle.
+      if (isSorabanClientError(error) && (error.code === "DAY_CLOSED" || error.code === "QUESTION_NOT_FOUND")) {
+        onReload();
+        return;
+      }
+      // Ağ hatasında tekrar denemek güvenlidir: sunucu aynı soruya ilk kaydı döndürür.
       setSubmitError(errorMessage(error));
       setPhase("confirm");
     }
@@ -170,9 +179,9 @@ function PlayGame({ initial }: { initial: PlayData }) {
       {!question ? (
         <StatusState
           kind="empty"
-          title={progress.completed ? "Bugünün tüm sorularını cevapladın" : "Açık soru kalmadı"}
-          message="Günün özetine bakabilirsin."
-          action={<Button onClick={() => router.push("/results")}>Günün özeti</Button>}
+          title={progress.completed ? "Bu bölümün tüm sorularını cevapladın" : "Açık soru kalmadı"}
+          message="Bölüm özetine bakabilirsin."
+          action={<Button onClick={() => router.push(episodeHref("/results", slug))}>Bölüm özeti</Button>}
         />
       ) : (
         <div ref={focusRef} tabIndex={-1} className="space-y-4 outline-none">
@@ -194,8 +203,8 @@ function PlayGame({ initial }: { initial: PlayData }) {
                     Sonraki soru
                   </Button>
                 ) : (
-                  <Button size="lg" trailingIcon={<IconArrowRight size={28} />} onClick={() => router.push("/results")}>
-                    Günün özeti
+                  <Button size="lg" trailingIcon={<IconArrowRight size={28} />} onClick={() => router.push(episodeHref("/results", slug))}>
+                    Bölüm özeti
                   </Button>
                 )}
               </div>
