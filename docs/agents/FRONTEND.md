@@ -1,5 +1,5 @@
 # Zeynep / Claude — frontend assignment
-Read `AGENTS.md`, `CLAUDE.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/GAUSS_CODEX_CONTEXT.md`.
+Read `AGENTS.md`, `CLAUDE.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SORABAN_CODEX_CONTEXT.md`.
 
 **Branch:** `feat/frontend-flow`. **Owned:** `app/page.tsx`, `app/play/**`, `app/results/**`, `app/leaderboard/**`, `app/layout.tsx`, `components/game/**`, `lib/client/**`, frontend tests.
 

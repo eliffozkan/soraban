@@ -1,5 +1,5 @@
 # Neris / Claude — UI/UX engineering assignment
-Read `AGENTS.md`, `CLAUDE.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/GAUSS_CODEX_CONTEXT.md`.
+Read `AGENTS.md`, `CLAUDE.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SORABAN_CODEX_CONTEXT.md`.
 
 **Branch:** `feat/ui-system`. **Owned:** `components/ui/**`, `app/globals.css`, `docs/design/**`, `public/brand/**`. **No Figma requirement**: implement the actual visual system in React/TypeScript/Tailwind.
 

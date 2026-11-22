@@ -1,6 +1,6 @@
 # SORABAN — Claude Code entrypoint
 
-Claude must read `AGENTS.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/GAUSS_CODEX_CONTEXT.md`, `CONTRIBUTING.md`, then the human-specific instructions below **before editing**.
+Claude must read `AGENTS.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SORABAN_CODEX_CONTEXT.md`, `CONTRIBUTING.md`, then the human-specific instructions below **before editing**.
 
 - **Zeynep:** `docs/agents/FRONTEND.md`.
 - **Neris:** `docs/agents/UIUX.md`.

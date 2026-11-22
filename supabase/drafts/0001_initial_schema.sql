@@ -3,8 +3,8 @@
 begin;
 
 -- Initial migration: fail rather than reuse a pre-existing schema with unknown objects/ACLs.
-create schema gauss_private;
-revoke all on schema gauss_private from public, anon, authenticated, service_role;
+create schema soraban_private;
+revoke all on schema soraban_private from public, anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated;
 
 create table public.game_days (
@@ -28,7 +28,7 @@ create table public.public_questions (
 );
 
 -- Keep this schema OUT of the Supabase exposed schemas. No public answer views.
-create table gauss_private.private_answers (
+create table soraban_private.private_answers (
   question_id uuid primary key references public.public_questions(id),
   answer double precision not null check (answer > 0 and answer <= 1e15),
   reasoning text not null check (length(trim(reasoning)) > 0),
@@ -69,7 +69,7 @@ create table public.daily_scores (
 
 alter table public.game_days enable row level security;
 alter table public.public_questions enable row level security;
-alter table gauss_private.private_answers enable row level security;
+alter table soraban_private.private_answers enable row level security;
 alter table public.player_profiles enable row level security;
 alter table public.guesses enable row level security;
 alter table public.daily_scores enable row level security;
@@ -77,7 +77,7 @@ alter table public.daily_scores enable row level security;
 -- Explicit grants: no inherited Supabase table defaults or client write access.
 revoke all on public.game_days, public.public_questions, public.player_profiles,
   public.guesses, public.daily_scores from public, anon, authenticated, service_role;
-revoke all on gauss_private.private_answers from public, anon, authenticated, service_role;
+revoke all on soraban_private.private_answers from public, anon, authenticated, service_role;
 -- Column allowlists also prevent future private columns becoming public by accident.
 -- Clients must select these columns explicitly: SELECT * on questions is denied.
 grant select (id, day_number, play_date, published)

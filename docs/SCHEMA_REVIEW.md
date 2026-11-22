@@ -1,8 +1,11 @@
 # SORABAN schema security and architecture review
 
-Reviewed against `GAUSS_CODEX_CONTEXT.md` v0.2 (now branded SORABAN).
-The legacy `gauss_private` schema and draft filename are intentionally unchanged;
-see [retained internal names](TEAM.md#retained-internal-names). This is a **static review of a draft**,
+Reviewed against [SORABAN_CODEX_CONTEXT.md](SORABAN_CODEX_CONTEXT.md) v0.2.
+The migration has never been applied. The draft now uses `soraban_private`; only
+its namespace spelling changed in this rename, with all grants, RLS, tables and
+constraints preserved. The draft filename is unchanged. No live schema was renamed.
+
+This is a **static review of a draft**,
 not migration approval, a live configuration audit or proof of runtime RLS behavior.
 No SQL was executed and no Supabase project was contacted during this review.
 The earlier HTTP 200 only verified connectivity; it did not verify this schema.
@@ -14,10 +17,10 @@ Within one `BEGIN`/`COMMIT` block, on a fresh schema with existing Supabase role
 
 | Object | Purpose and key constraints |
 | --- | --- |
-| Schema `gauss_private` | Private objects, no `PUBLIC`, `anon`, `authenticated` or `service_role` usage/create grant |
+| Schema `soraban_private` | Private objects, no `PUBLIC`, `anon`, `authenticated` or `service_role` usage/create grant |
 | `public.game_days` | UUID PK, unique finite `play_date`, unique day number 1–30, unpublished by default |
 | `public.public_questions` | UUID PK, day FK, unique day/position 1–6, nonblank prompt/unit, paired void timestamp/internal reason |
-| `gauss_private.private_answers` | Question PK/FK, positive bounded answer, nonblank reasoning, HTTPS-prefixed source |
+| `soraban_private.private_answers` | Question PK/FK, positive bounded answer, nonblank reasoning, HTTPS-prefixed source |
 | `public.player_profiles` | Auth user PK/FK, optional trimmed nickname 2–32 characters, approval requires a nickname |
 | `public.guesses` | UUID PK, auth user/question FKs, UNIQUE(player_id, question_id), bounded guess/score, finite submission timestamp |
 | `public.daily_scores` | Composite player/day PK, auth user/day FKs, bounded score, denominator 1–6, finite completion timestamp |
@@ -39,7 +42,7 @@ trusted. `BYPASSRLS` alone does not bypass table/schema privileges.
 
 No data, dates, credentials, functions/RPCs, triggers, views, custom types, policies
 for writes, role creation, auth settings, exposed-schema changes or default-privilege
-changes are included. The initial migration deliberately fails if `gauss_private`
+changes are included. The initial migration deliberately fails if `soraban_private`
 already exists; it is not an idempotent rerun/repair script.
 
 ## Findings and minimal corrections
@@ -68,7 +71,7 @@ it would require reading secret answers and does not replace a trusted transacti
   automatically created yet.
 - Question visibility uses an explicitly correlated query to `game_days`; its RLS
   supplies the publication/date gate. There is no blanket answer view, join policy,
-  answer RPC or Realtime publication added by this draft. Keep `gauss_private` out
+  answer RPC or Realtime publication added by this draft. Keep `soraban_private` out
   of exposed Data API schemas even though schema/table ACLs also deny client access.
 - Select question columns explicitly. Literal SQL `SELECT *` includes the forbidden
   note and fails. Do not restore table-wide SELECT to work around a frontend query.
@@ -173,7 +176,7 @@ an isolated temporary parser, TypeScript scoring tests and whitespace/diff revie
 A parser does not resolve Supabase roles/functions or evaluate constraints/policies.
 It does not execute the migration. Local results on Node 24.22.3:
 
-- `pglast` 7.24 (installed only in `/tmp/gauss-schema-review-venv`) accepted all
+- `pglast` 7.24 (installed only in a temporary review environment) accepted all
   30 statements. AST checks verified the object/constraint counts, RLS on all six
   tables, SELECT-only policies, role/column grant boundaries and unique guess key.
 - `npm test`: 22 scoring tests passed.

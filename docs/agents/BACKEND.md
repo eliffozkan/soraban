@@ -1,5 +1,5 @@
 # Elif / Codex — backend assignment
-Read `AGENTS.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SCHEMA_REVIEW.md`, `docs/GAUSS_CODEX_CONTEXT.md`.
+Read `AGENTS.md`, `docs/TEAM.md`, `docs/API_CONTRACT.md`, `docs/SCHEMA_REVIEW.md`, `docs/SORABAN_CODEX_CONTEXT.md`.
 
 **Branch:** `feat/backend-foundation`. **Owned:** `app/api/**`, `lib/game/**`, `lib/data/**`, `lib/supabase/**`, `supabase/**`, backend tests. The existing SQL draft has not been applied.
 

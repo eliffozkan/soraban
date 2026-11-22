@@ -1,6 +1,6 @@
 # SORABAN project instructions
 
-- Read `docs/GAUSS_CODEX_CONTEXT.md` completely first. It supersedes the older GDD.
+- Read `docs/SORABAN_CODEX_CONTEXT.md` completely first. It supersedes the older GDD.
 - Work in the explicitly assigned feature scope and branch. Never fabricate questions,
   credentials, or a season start. No live account changes, migration execution,
   deployment, or spending without explicit approval.
@@ -33,8 +33,9 @@
   current stage is parallel feature work: backend, gameplay frontend and coded UI/UX.
   The API document is a proposal, not implemented endpoints. Database execution
   remains gated by explicit approval.
-- SORABAN is the public name. Preserve legacy SQL identifiers, migration filenames
-  and the context filename unless an explicit compatibility change is requested.
+- Use SORABAN/soraban for active project names and `docs/SORABAN_CODEX_CONTEXT.md`
+  for the specification. The unapplied draft uses `soraban_private`; keep that schema
+  outside exposed API schemas. Renaming a draft never authorizes SQL execution.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

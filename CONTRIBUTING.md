@@ -1,6 +1,6 @@
 # Contributing to SORABAN
 
-Read [the specification](docs/GAUSS_CODEX_CONTEXT.md), [AGENTS.md](AGENTS.md) and
+Read [the specification](docs/SORABAN_CODEX_CONTEXT.md), [AGENTS.md](AGENTS.md) and
 [team ownership](docs/TEAM.md). Parallel feature development now follows the named three-agent roles in
 [TEAM.md](docs/TEAM.md) and proposed [API contract](docs/API_CONTRACT.md).
 Claude agents also read [CLAUDE.md](CLAUDE.md); each agent reads its assigned brief
@@ -9,8 +9,9 @@ Use issues/PRs to assign one developer per task and agree changes across boundar
 
 ## Local setup
 
-Use the checkout directory (existing machines may still call it `gauss`). With nvm
-loaded, select the project-pinned Node 24 LTS version:
+New clones use `soraban` as the checkout directory. For an existing checkout, use
+the folder procedure below only after Codex exits. With nvm loaded, select the
+project-pinned Node 24 LTS version:
 
 ```sh
 nvm use
@@ -102,3 +103,34 @@ Subsequent changes follow the branch/PR workflow above. A non-fast-forward rejec
 requires fetching and reviewing remote changes; never force-push. Publishing draft SQL
 does not execute it or approve a migration. Collaborator access and review enforcement
 are separate work requiring authorization.
+
+## Rename the local checkout after Codex exits
+
+These are **manual instructions**, not commands run by the agent. Finish/exit Codex,
+stop the dev server, and close terminals/editors/other agents using the old checkout.
+Open a fresh terminal outside it. Confirm the destination is not another checkout;
+the guards below stop on an existing destination, including a dangling symlink.
+On this Linux machine, run:
+
+```sh
+cd "$HOME"
+if [ -d "$HOME/gauss" ] && [ ! -e "$HOME/soraban" ] && [ ! -L "$HOME/soraban" ]; then
+  mv -T -- "$HOME/gauss" "$HOME/soraban"
+else
+  echo "Source missing or destination exists; no folder moved."
+fi
+```
+
+Only after a successful move, reopen the project and Codex at `~/soraban`:
+
+```sh
+cd "$HOME/soraban"
+nvm use
+npm run build
+```
+
+The entire folder, including `.git`, ignored `.env.local` and installed dependencies,
+moves together. Do not recreate Git, copy keys into tracked files, change remotes,
+rename the Supabase project or execute SQL. Refresh editor shortcuts/terminal starting
+paths to the new directory. Rebuilding regenerates path-dependent Next.js output.
+Each teammate applies this only to their own checkout if it still has the old name.
